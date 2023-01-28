@@ -6,5 +6,9 @@ import (
 
 func Commands(ui cli.Ui) map[string]cli.CommandFactory {
 
-	return map[string]cli.CommandFactory{}
+	return map[string]cli.CommandFactory{
+		"generate": func() (cli.Command, error) {
+			return NewGenerateCommand(ui)
+		},
+	}
 }
