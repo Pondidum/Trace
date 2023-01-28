@@ -3,7 +3,10 @@ package command
 import (
 	"context"
 	"os"
+	"path"
+	"time"
 
+	"github.com/go-logfmt/logfmt"
 	"github.com/mitchellh/cli"
 	"github.com/posener/complete"
 	"github.com/spf13/pflag"
@@ -12,12 +15,16 @@ import (
 type Base struct {
 	Ui  cli.Ui
 	cmd NamedCommand
+
+	now func() int64
 }
 
 func NewBase(ui cli.Ui, cmd NamedCommand) Base {
 	return Base{
 		Ui:  ui,
 		cmd: cmd,
+
+		now: time.Now().UnixNano,
 	}
 }
 
@@ -95,4 +102,32 @@ func (b *Base) Run(args []string) int {
 	}
 
 	return 0
+}
+
+func (b *Base) writeState(traceParent string, data map[string]any) error {
+
+	dir := path.Join(os.TempDir(), "trace", "state")
+
+	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+		return err
+	}
+
+	f, err := os.Create(path.Join(dir, traceParent))
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	encoder := logfmt.NewEncoder(f)
+	for key, val := range data {
+		if err := encoder.EncodeKeyval(key, val); err != nil {
+			return err
+		}
+	}
+
+	if err := encoder.EndRecord(); err != nil {
+		return err
+	}
+
+	return nil
 }

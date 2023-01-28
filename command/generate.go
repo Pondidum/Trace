@@ -42,11 +42,27 @@ func (c *GenerateCommand) EnvironmentVariables() map[string]string {
 
 func (c *GenerateCommand) RunContext(ctx context.Context, args []string) error {
 
+	if len(args) != 1 {
+		return fmt.Errorf("this command takes 1 argument: span_name")
+	}
+
+	name := args[0]
+
 	generator := newIDGenerator()
 	trace, span := generator.NewIDs(ctx)
 
-	c.Ui.Output(fmt.Sprintf("00-%s-%s-01", trace, span))
+	traceParent := fmt.Sprintf("00-%s-%s-01", trace, span)
 
+	err := c.writeState(traceParent, map[string]any{
+		"name":  name,
+		"start": c.now(),
+	})
+
+	if err != nil {
+		return err
+	}
+
+	c.Ui.Output(traceParent)
 	return nil
 }
 

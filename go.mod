@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/fatih/color v1.7.0
+	github.com/go-logfmt/logfmt v0.5.1
 	github.com/mattn/go-colorable v0.1.13
 	github.com/mitchellh/cli v1.1.5
 	github.com/posener/complete v1.1.1
