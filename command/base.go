@@ -5,18 +5,23 @@ import (
 	"os"
 	"path"
 	"time"
+	"trace/tracing"
 
 	"github.com/go-logfmt/logfmt"
 	"github.com/mitchellh/cli"
 	"github.com/posener/complete"
 	"github.com/spf13/pflag"
+	"go.opentelemetry.io/otel/trace"
 )
+
+const TraceParentEnvVar = "TRACEPARENT"
 
 type Base struct {
 	Ui  cli.Ui
 	cmd NamedCommand
 
-	now func() int64
+	now                func() int64
+	testTracerProvider trace.TracerProvider
 }
 
 func NewBase(ui cli.Ui, cmd NamedCommand) Base {
@@ -104,6 +109,24 @@ func (b *Base) Run(args []string) int {
 	return 0
 }
 
+func (b *Base) createTracer(ctx context.Context) (trace.Tracer, error) {
+
+	tp := b.testTracerProvider
+
+	if tp == nil {
+		cfg := &tracing.ExporterConfig{
+			Endpoint: "localhost:4317",
+		}
+		var err error
+		tp, err = tracing.CreateTraceProvider(ctx, cfg)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return tp.Tracer("trace-cli"), nil
+}
+
 func (b *Base) writeState(traceParent string, data map[string]any) error {
 
 	dir := path.Join(os.TempDir(), "trace", "state")
@@ -130,4 +153,29 @@ func (b *Base) writeState(traceParent string, data map[string]any) error {
 	}
 
 	return nil
+}
+
+func (b *Base) readState(traceParent string) (map[string]string, error) {
+
+	filePath := path.Join(os.TempDir(), "trace", "state", traceParent)
+
+	f, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	decoder := logfmt.NewDecoder(f)
+	data := map[string]string{}
+
+	for decoder.ScanRecord() {
+		for decoder.ScanKeyval() {
+			k := string(decoder.Key())
+			v := string(decoder.Value())
+
+			data[k] = v
+		}
+	}
+
+	return data, nil
 }

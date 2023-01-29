@@ -2,14 +2,10 @@ package command
 
 import (
 	"context"
-	crand "crypto/rand"
-	"encoding/binary"
 	"fmt"
-	"math/rand"
 
 	"github.com/mitchellh/cli"
 	"github.com/spf13/pflag"
-	"go.opentelemetry.io/otel/trace"
 )
 
 func NewGenerateCommand(ui cli.Ui) (*GenerateCommand, error) {
@@ -47,11 +43,7 @@ func (c *GenerateCommand) RunContext(ctx context.Context, args []string) error {
 	}
 
 	name := args[0]
-
-	generator := newIDGenerator()
-	trace, span := generator.NewIDs(ctx)
-
-	traceParent := fmt.Sprintf("00-%s-%s-01", trace, span)
+	traceParent := NewTraceParent(ctx)
 
 	err := c.writeState(traceParent, map[string]any{
 		"name":  name,
@@ -64,34 +56,4 @@ func (c *GenerateCommand) RunContext(ctx context.Context, args []string) error {
 
 	c.Ui.Output(traceParent)
 	return nil
-}
-
-type randomIDGenerator struct {
-	randSource *rand.Rand
-}
-
-// NewSpanID returns a non-zero span ID from a randomly-chosen sequence.
-func (gen *randomIDGenerator) NewSpanID(ctx context.Context, traceID trace.TraceID) trace.SpanID {
-	sid := trace.SpanID{}
-	_, _ = gen.randSource.Read(sid[:])
-	return sid
-}
-
-// NewIDs returns a non-zero trace ID and a non-zero span ID from a
-// randomly-chosen sequence.
-func (gen *randomIDGenerator) NewIDs(ctx context.Context) (trace.TraceID, trace.SpanID) {
-	tid := trace.TraceID{}
-	_, _ = gen.randSource.Read(tid[:])
-	sid := trace.SpanID{}
-	_, _ = gen.randSource.Read(sid[:])
-	return tid, sid
-}
-
-func newIDGenerator() *randomIDGenerator {
-	gen := &randomIDGenerator{}
-	var rngSeed int64
-	_ = binary.Read(crand.Reader, binary.LittleEndian, &rngSeed)
-	gen.randSource = rand.New(rand.NewSource(rngSeed))
-
-	return gen
 }
