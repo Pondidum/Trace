@@ -43,7 +43,7 @@ func (c *GenerateCommand) RunContext(ctx context.Context, args []string) error {
 	}
 
 	name := args[0]
-	traceParent := NewTraceParent(ctx)
+	traceParent := NewTraceParent()
 
 	err := c.writeState(traceParent, map[string]any{
 		"name":  name,

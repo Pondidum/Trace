@@ -1,17 +1,19 @@
 package command
 
 import (
-	"context"
 	crand "crypto/rand"
 	"encoding/binary"
 	"fmt"
 	"math/rand"
+	"regexp"
+	"strings"
 
 	"go.opentelemetry.io/otel/trace"
 )
 
 var randSource *rand.Rand
 
+// invoked by go runtime
 func init() {
 	if randSource != nil {
 		return
@@ -22,24 +24,45 @@ func init() {
 	randSource = rand.New(rand.NewSource(rngSeed))
 }
 
-// NewSpanID returns a non-zero span ID from a randomly-chosen sequence.
-func NewSpanID(ctx context.Context, traceID trace.TraceID) trace.SpanID {
+func NewTraceID() trace.TraceID {
+	tid := trace.TraceID{}
+	randSource.Read(tid[:])
+	return tid
+}
+
+func NewSpanID() trace.SpanID {
 	sid := trace.SpanID{}
-	_, _ = randSource.Read(sid[:])
+	randSource.Read(sid[:])
 	return sid
 }
 
-// NewIDs returns a non-zero trace ID and a non-zero span ID from a
-// randomly-chosen sequence.
-func NewIDs(ctx context.Context) (trace.TraceID, trace.SpanID) {
-	tid := trace.TraceID{}
-	_, _ = randSource.Read(tid[:])
-	sid := trace.SpanID{}
-	_, _ = randSource.Read(sid[:])
-	return tid, sid
+func NewTraceParent() string {
+	return fmt.Sprintf("00-%s-%s-01", NewTraceID(), NewSpanID())
 }
 
-func NewTraceParent(ctx context.Context) string {
-	trace, span := NewIDs(ctx)
-	return fmt.Sprintf("00-%s-%s-01", trace, span)
+// no $ at the end as a trace can have other things that we don't care about after it
+var traceParentRx = regexp.MustCompile(`^[[:xdigit:]]{2}-[[:xdigit:]]{32}-[[:xdigit:]]{16}-[[:xdigit:]]{2}`)
+
+func ParseTraceParent(traceParent string) (trace.TraceID, trace.SpanID, error) {
+
+	if !traceParentRx.MatchString(traceParent) {
+		return trace.TraceID{}, trace.SpanID{}, fmt.Errorf("invalid traceParent")
+	}
+
+	parts := strings.Split(traceParent, "-")
+	if len(parts) < 3 {
+		return trace.TraceID{}, trace.SpanID{}, fmt.Errorf("invalid traceParent")
+	}
+
+	tid, err := trace.TraceIDFromHex(parts[1])
+	if err != nil {
+		return trace.TraceID{}, trace.SpanID{}, err
+	}
+
+	sid, err := trace.SpanIDFromHex(parts[2])
+	if err != nil {
+		return trace.TraceID{}, trace.SpanID{}, err
+	}
+
+	return tid, sid, nil
 }
