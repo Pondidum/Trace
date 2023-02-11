@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"trace/tracing"
 
 	"github.com/mitchellh/cli"
 	"github.com/spf13/pflag"
@@ -53,7 +54,7 @@ func (c *SpanStartCommand) RunContext(ctx context.Context, args []string) error 
 		return fmt.Errorf("this command requires a trace_parent, either from the command line or environment")
 	}
 
-	tid, parentSid, err := ParseTraceParent(traceParent)
+	tid, parentSid, err := tracing.ParseTraceParent(traceParent)
 	if err != nil {
 		return err
 	}

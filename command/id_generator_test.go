@@ -1,7 +1,6 @@
 package command
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -29,19 +28,6 @@ func TestIdGeneration(t *testing.T) {
 		}
 
 		assert.Len(t, seen, 10)
-	})
-
-	t.Run("trace_parent", func(t *testing.T) {
-		_, _, err := ParseTraceParent(NewTraceParent())
-		assert.NoError(t, err)
-
-		expectedTrace := NewTraceID()
-		expectedSpan := NewSpanID()
-
-		tid, sid, err := ParseTraceParent(fmt.Sprintf("00-%s-%s-01", expectedTrace, expectedSpan))
-		assert.NoError(t, err)
-		assert.Equal(t, expectedTrace, tid)
-		assert.Equal(t, expectedSpan, sid)
 	})
 
 }

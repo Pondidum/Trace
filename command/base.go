@@ -12,6 +12,8 @@ import (
 	"github.com/posener/complete"
 	"github.com/spf13/pflag"
 	"go.opentelemetry.io/otel/trace"
+
+	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 )
 
 const TraceParentEnvVar = "TRACEPARENT"
@@ -20,8 +22,8 @@ type Base struct {
 	Ui  cli.Ui
 	cmd NamedCommand
 
-	now                func() int64
-	testTracerProvider trace.TracerProvider
+	now              func() int64
+	testSpanExporter tracesdk.SpanExporter
 }
 
 func NewBase(ui cli.Ui, cmd NamedCommand) Base {
@@ -109,19 +111,23 @@ func (b *Base) Run(args []string) int {
 	return 0
 }
 
-func (b *Base) createTracer(ctx context.Context) (trace.Tracer, error) {
+func (b *Base) createTracer(ctx context.Context, g tracesdk.IDGenerator) (trace.Tracer, error) {
 
-	tp := b.testTracerProvider
+	exporter := b.testSpanExporter
 
-	if tp == nil {
-		cfg := &tracing.ExporterConfig{
-			Endpoint: "localhost:4317",
-		}
+	if exporter == nil {
 		var err error
-		tp, err = tracing.CreateTraceProvider(ctx, cfg)
+		exporter, err = tracing.CreateExporter(ctx, &tracing.ExporterConfig{
+			Endpoint: "localhost:4317",
+		})
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	tp, err := tracing.CreateTraceProvider(ctx, g, exporter)
+	if err != nil {
+		return nil, err
 	}
 
 	return tp.Tracer("trace-cli"), nil

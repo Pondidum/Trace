@@ -9,7 +9,6 @@ import (
 
 	"github.com/mitchellh/cli"
 	"github.com/stretchr/testify/assert"
-	tracesdk "go.opentelemetry.io/otel/sdk/trace"
 )
 
 func TestFinishingTrace(t *testing.T) {
@@ -54,6 +53,9 @@ func TestFinishingTrace(t *testing.T) {
 		start.Run([]string{"tests"})
 		tp := strings.TrimSpace(ui.OutputWriter.String())
 
+		startTrace, startSpan, err := tracing.ParseTraceParent(tp)
+		assert.NoError(t, err)
+
 		// finish the trace 10 seconds later
 		cmd, _, exporter := createTestFinishCommand()
 		cmd.now = func() int64 { return endTime }
@@ -65,6 +67,8 @@ func TestFinishingTrace(t *testing.T) {
 		assert.Equal(t, "trace-cli", span.InstrumentationLibrary().Name)
 		assert.Equal(t, startTime, span.StartTime().UnixNano())
 		assert.Equal(t, endTime, span.EndTime().UnixNano())
+		assert.Equal(t, startTrace.String(), span.SpanContext().TraceID().String())
+		assert.Equal(t, startSpan.String(), span.SpanContext().SpanID().String())
 	})
 
 }
@@ -73,11 +77,8 @@ func createTestFinishCommand() (*FinishCommand, *cli.MockUi, *tracing.MemoryExpo
 
 	ui := cli.NewMockUi()
 	exporter := tracing.NewMemoryExporter()
-
 	cmd, _ := NewFinishCommand(ui)
-	cmd.testTracerProvider = tracesdk.NewTracerProvider(
-		tracesdk.WithSyncer(exporter),
-	)
+	cmd.testSpanExporter = exporter
 
 	return cmd, ui, exporter
 }

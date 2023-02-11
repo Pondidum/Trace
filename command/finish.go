@@ -57,12 +57,19 @@ func (c *FinishCommand) RunContext(ctx context.Context, args []string) error {
 		return err
 	}
 
-	tracer, err := c.createTracer(ctx)
+	ids, err := tracing.ContinueExisting(traceParent)
 	if err != nil {
 		return err
 	}
 
-	createRootSpan(tracer, traceParent, c.now(), state)
+	tracer, err := c.createTracer(ctx, ids)
+	if err != nil {
+		return err
+	}
+
+	if err := createRootSpan(tracer, traceParent, c.now(), state); err != nil {
+		return err
+	}
 
 	return nil
 }
