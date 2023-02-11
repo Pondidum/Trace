@@ -40,6 +40,10 @@ func NewTraceParent() string {
 	return fmt.Sprintf("00-%s-%s-01", NewTraceID(), NewSpanID())
 }
 
+func AsTraceParent(tid trace.TraceID, sid trace.SpanID) string {
+	return fmt.Sprintf("00-%s-%s-01", tid, sid)
+}
+
 // no $ at the end as a trace can have other things that we don't care about after it
 var traceParentRx = regexp.MustCompile(`^[[:xdigit:]]{2}-[[:xdigit:]]{32}-[[:xdigit:]]{16}-[[:xdigit:]]{2}`)
 
