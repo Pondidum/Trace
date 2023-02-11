@@ -49,7 +49,7 @@ func TestFinishingTrace(t *testing.T) {
 
 		// start a trace
 		ui := cli.NewMockUi()
-		start, _ := NewGenerateCommand(ui)
+		start, _ := NewStartCommand(ui)
 		start.now = func() int64 { return startTime }
 		start.Run([]string{"tests"})
 		tp := strings.TrimSpace(ui.OutputWriter.String())
@@ -84,7 +84,7 @@ func createTestFinishCommand() (*FinishCommand, *cli.MockUi, *tracing.MemoryExpo
 
 func startTestTrace() string {
 	ui := cli.NewMockUi()
-	cmd, _ := NewGenerateCommand(ui)
+	cmd, _ := NewStartCommand(ui)
 	cmd.Run([]string{"tests"})
 
 	return strings.TrimSpace(ui.OutputWriter.String())

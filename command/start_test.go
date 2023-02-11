@@ -13,11 +13,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGeneration(t *testing.T) {
+func TestStarting(t *testing.T) {
 	t.Parallel()
 
 	ui := cli.NewMockUi()
-	cmd, _ := NewGenerateCommand(ui)
+	cmd, _ := NewStartCommand(ui)
 
 	now := time.Now().UnixNano()
 	cmd.Base.now = func() int64 {
