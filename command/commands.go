@@ -14,6 +14,14 @@ func Commands(ui cli.Ui) map[string]cli.CommandFactory {
 			return NewFinishCommand(ui)
 		},
 
+		"span": func() (cli.Command, error) {
+			return &cli.MockCommand{
+				SynopsisText: "Interact with spans",
+				HelpText:     "Interact with spans",
+				RunResult:    cli.RunResultHelp,
+			}, nil
+		},
+
 		"span start": func() (cli.Command, error) {
 			return NewSpanStartCommand(ui)
 		},
