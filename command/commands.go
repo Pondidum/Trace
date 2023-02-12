@@ -17,5 +17,8 @@ func Commands(ui cli.Ui) map[string]cli.CommandFactory {
 		"span start": func() (cli.Command, error) {
 			return NewSpanStartCommand(ui)
 		},
+		"span finish": func() (cli.Command, error) {
+			return NewSpanFinishCommand(ui)
+		},
 	}
 }

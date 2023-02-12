@@ -65,7 +65,7 @@ func (c *SpanStartCommand) RunContext(ctx context.Context, args []string) error 
 	data := map[string]any{
 		"name":   name,
 		"start":  c.now(),
-		"parent": parentSid,
+		"parent": parentSid.String(),
 	}
 
 	if err := c.writeState(newTraceParent, data); err != nil {
