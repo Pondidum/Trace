@@ -14,19 +14,19 @@ func Commands(ui cli.Ui) map[string]cli.CommandFactory {
 			return NewFinishCommand(ui)
 		},
 
-		"span": func() (cli.Command, error) {
+		"group": func() (cli.Command, error) {
 			return &cli.MockCommand{
-				SynopsisText: "Interact with spans",
-				HelpText:     "Interact with spans",
+				SynopsisText: "Interact with groups",
+				HelpText:     "Interact with groups",
 				RunResult:    cli.RunResultHelp,
 			}, nil
 		},
 
-		"span start": func() (cli.Command, error) {
-			return NewSpanStartCommand(ui)
+		"group start": func() (cli.Command, error) {
+			return NewGroupStartCommand(ui)
 		},
-		"span finish": func() (cli.Command, error) {
-			return NewSpanFinishCommand(ui)
+		"group finish": func() (cli.Command, error) {
+			return NewGroupFinishCommand(ui)
 		},
 	}
 }

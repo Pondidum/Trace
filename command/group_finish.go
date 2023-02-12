@@ -13,51 +13,51 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-func NewSpanFinishCommand(ui cli.Ui) (*SpanFinishCommand, error) {
-	cmd := &SpanFinishCommand{}
+func NewGroupFinishCommand(ui cli.Ui) (*GroupFinishCommand, error) {
+	cmd := &GroupFinishCommand{}
 	cmd.Base = NewBase(ui, cmd)
 
 	return cmd, nil
 }
 
-type SpanFinishCommand struct {
+type GroupFinishCommand struct {
 	Base
 }
 
-func (c *SpanFinishCommand) Name() string {
-	return "span finish"
+func (c *GroupFinishCommand) Name() string {
+	return "group finish"
 }
 
-func (c *SpanFinishCommand) Synopsis() string {
-	return "Finish a span"
+func (c *GroupFinishCommand) Synopsis() string {
+	return "Finish a group"
 }
 
-func (c *SpanFinishCommand) Flags() *pflag.FlagSet {
+func (c *GroupFinishCommand) Flags() *pflag.FlagSet {
 	flags := pflag.NewFlagSet(c.Name(), pflag.ContinueOnError)
 	return flags
 }
 
-func (c *SpanFinishCommand) EnvironmentVariables() map[string]string {
+func (c *GroupFinishCommand) EnvironmentVariables() map[string]string {
 	return map[string]string{}
 }
 
-func (c *SpanFinishCommand) RunContext(ctx context.Context, args []string) error {
+func (c *GroupFinishCommand) RunContext(ctx context.Context, args []string) error {
 
-	spanid := os.Getenv(TraceParentEnvVar)
+	groupId := os.Getenv(TraceParentEnvVar)
 	if len(args) > 0 {
-		spanid = args[0]
+		groupId = args[0]
 	}
 
-	if spanid == "" {
-		return fmt.Errorf("this command takes 1 argument: spanid")
+	if groupId == "" {
+		return fmt.Errorf("this command takes 1 argument: groupid")
 	}
 
-	state, err := c.readState(spanid)
+	state, err := c.readState(groupId)
 	if err != nil {
 		return err
 	}
 
-	traceId, _, err := tracing.ParseTraceParent(spanid)
+	traceId, _, err := tracing.ParseTraceParent(groupId)
 	if err != nil {
 		return err
 	}
@@ -69,7 +69,7 @@ func (c *SpanFinishCommand) RunContext(ctx context.Context, args []string) error
 
 	parentSpanId := AsTraceParent(traceId, parentSpan)
 
-	ids, err := tracing.ContinueExisting(spanid)
+	ids, err := tracing.ContinueExisting(groupId)
 	if err != nil {
 		return err
 	}

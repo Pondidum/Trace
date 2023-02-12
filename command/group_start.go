@@ -10,38 +10,38 @@ import (
 	"github.com/spf13/pflag"
 )
 
-func NewSpanStartCommand(ui cli.Ui) (*SpanStartCommand, error) {
-	cmd := &SpanStartCommand{}
+func NewGroupStartCommand(ui cli.Ui) (*GroupStartCommand, error) {
+	cmd := &GroupStartCommand{}
 	cmd.Base = NewBase(ui, cmd)
 
 	return cmd, nil
 }
 
-type SpanStartCommand struct {
+type GroupStartCommand struct {
 	Base
 }
 
-func (c *SpanStartCommand) Name() string {
-	return "span start"
+func (c *GroupStartCommand) Name() string {
+	return "group start"
 }
 
-func (c *SpanStartCommand) Synopsis() string {
-	return "start a span"
+func (c *GroupStartCommand) Synopsis() string {
+	return "start a group"
 }
 
-func (c *SpanStartCommand) Flags() *pflag.FlagSet {
+func (c *GroupStartCommand) Flags() *pflag.FlagSet {
 	flags := pflag.NewFlagSet(c.Name(), pflag.ContinueOnError)
 	return flags
 }
 
-func (c *SpanStartCommand) EnvironmentVariables() map[string]string {
+func (c *GroupStartCommand) EnvironmentVariables() map[string]string {
 	return map[string]string{}
 }
 
-func (c *SpanStartCommand) RunContext(ctx context.Context, args []string) error {
+func (c *GroupStartCommand) RunContext(ctx context.Context, args []string) error {
 
 	if len(args) < 1 {
-		return fmt.Errorf("this command takes at least 1 argument: span_name")
+		return fmt.Errorf("this command takes at least 1 argument: group_name")
 	}
 
 	name := args[0]

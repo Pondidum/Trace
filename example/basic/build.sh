@@ -6,31 +6,31 @@ export "PATH=${PATH}:../../"
 export TRACEPARENT="$(trace start "basic-build")"
 
 
-clone=$(trace span start "clone_artifacts")
+clone=$(trace group start "clone_artifacts")
   # git pull
   sleep 1s
   # install tools
-trace span finish "${clone}"
+trace group finish "${clone}"
 
-docker=$(trace span start "docker")
+docker=$(trace group start "docker")
 
-  pulls=$(trace span start "pull" "${docker}")
+  pulls=$(trace group start "pull" "${docker}")
     # docker pull
     sleep 2s
-  trace span finish "${pulls}"
+  trace group finish "${pulls}"
 
-  build=$(trace span start "build" "${docker}")
+  build=$(trace group start "build" "${docker}")
     # docker builds
     sleep 2s
-  trace span finish "${build}"
+  trace group finish "${build}"
 
 
-  push=$(trace span start "push" "${docker}")
+  push=$(trace group start "push" "${docker}")
     # docker push
     sleep 2s
-  trace span finish "${push}"
+  trace group finish "${push}"
 
-trace span finish "${docker}"
+trace group finish "${docker}"
 
 # end of build
 trace finish

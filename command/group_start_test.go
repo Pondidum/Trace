@@ -62,7 +62,7 @@ func TestSpanStartArgumentParsing(t *testing.T) {
 			}
 
 			ui := cli.NewMockUi()
-			cmd, _ := NewSpanStartCommand(ui)
+			cmd, _ := NewGroupStartCommand(ui)
 
 			exitCode := cmd.Run(tc.args)
 			assert.Equal(t, tc.expectedExit, exitCode, ui.ErrorWriter.String())
@@ -78,7 +78,7 @@ func TestSpanStart(t *testing.T) {
 	t.Parallel()
 
 	ui := cli.NewMockUi()
-	cmd, _ := NewSpanStartCommand(ui)
+	cmd, _ := NewGroupStartCommand(ui)
 
 	now := time.Now().UnixNano()
 	cmd.Base.now = func() int64 {

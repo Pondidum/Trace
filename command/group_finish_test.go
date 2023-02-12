@@ -68,7 +68,7 @@ func startTrace() string {
 func startSpan(trace string) string {
 
 	ui := cli.NewMockUi()
-	start, _ := NewSpanStartCommand(ui)
+	start, _ := NewGroupStartCommand(ui)
 	start.Run([]string{"tests", trace})
 	tp := strings.TrimSpace(ui.OutputWriter.String())
 
@@ -78,7 +78,7 @@ func startSpan(trace string) string {
 func finishSpan(span string) trace.ReadOnlySpan {
 	ui := cli.NewMockUi()
 	exporter := tracing.NewMemoryExporter()
-	cmd, _ := NewSpanFinishCommand(ui)
+	cmd, _ := NewGroupFinishCommand(ui)
 	cmd.testSpanExporter = exporter
 	cmd.now = func() int64 { return time.Now().Add(10 * time.Second).UnixNano() }
 
