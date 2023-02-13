@@ -1,0 +1,63 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - '**'
+    tags-ignore:
+      - '**'
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/setup-go@v3
+      with:
+        go-version: "1.18"
+
+    - uses: actions/checkout@v2
+
+    - name: Download Modules
+      run: go mod download
+
+    - name: Generate
+      run: go generate ./...
+
+    - name: Build
+      env:
+        GOOS: linux
+        GOARCH: amd64
+        CGO_ENABLED: "0"
+      run: go build -ldflags="-X trace/version.GitCommit=${{ github.sha }} -X trace/version.Prerelease="""
+
+    - name: Test
+      run: go test -v ./...
+
+    - name: Store Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: trace
+        path: trace
+
+    - name: Generate Release Notes
+      if: github.ref_name == 'main'
+      run: |
+        echo "TRACE_VERSION=$(./trace version --short)" >> "${GITHUB_ENV}"
+        ./trace version --changelog --raw > release-notes.md
+
+    - name: Release
+      if: github.ref_name == 'main'
+      uses: softprops/action-gh-release@v1
+      with:
+        name: ${{ env.TRACE_VERSION }}
+        tag_name: ${{ env.TRACE_VERSION }}
+        body_path: release-notes.md
+        files: trace
