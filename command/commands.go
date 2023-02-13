@@ -21,12 +21,15 @@ func Commands(ui cli.Ui) map[string]cli.CommandFactory {
 				RunResult:    cli.RunResultHelp,
 			}, nil
 		},
-
 		"group start": func() (cli.Command, error) {
 			return NewGroupStartCommand(ui)
 		},
 		"group finish": func() (cli.Command, error) {
 			return NewGroupFinishCommand(ui)
+		},
+
+		"version": func() (cli.Command, error) {
+			return NewVersionCommand(ui)
 		},
 	}
 }
