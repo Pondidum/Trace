@@ -26,7 +26,7 @@ func TestSpanStartArgumentParsing(t *testing.T) {
 		{
 			description:   "no args and no environment",
 			expectedExit:  1,
-			expectedError: "this command takes at least 1 argument: span_name",
+			expectedError: "this command takes at least 1 argument: group_name",
 		},
 		{
 			description:   "only span name, no trace from env",
