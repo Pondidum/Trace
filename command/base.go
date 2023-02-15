@@ -3,6 +3,7 @@ package command
 import (
 	"context"
 	"os"
+	"os/exec"
 	"path"
 	"time"
 	"trace/tracing"
@@ -105,6 +106,12 @@ func (b *Base) Run(args []string) int {
 
 	if err := b.cmd.RunContext(context.Background(), f.Args()); err != nil {
 		b.Ui.Error(err.Error())
+
+		// handle an exitError specifically so we can pass its exit code on
+		if exitErr, ok := err.(*exec.ExitError); ok {
+			return exitErr.ExitCode()
+		}
+
 		return 1
 	}
 

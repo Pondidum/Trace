@@ -28,6 +28,10 @@ func Commands(ui cli.Ui) map[string]cli.CommandFactory {
 			return NewGroupFinishCommand(ui)
 		},
 
+		"task": func() (cli.Command, error) {
+			return NewTaskCommand(ui)
+		},
+
 		"version": func() (cli.Command, error) {
 			return NewVersionCommand(ui)
 		},
