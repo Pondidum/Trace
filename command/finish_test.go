@@ -12,7 +12,6 @@ import (
 )
 
 func TestFinishingTrace(t *testing.T) {
-	t.Parallel()
 
 	t.Run("when there is no traceparent arg or env", func(t *testing.T) {
 		os.Unsetenv(TraceParentEnvVar)
