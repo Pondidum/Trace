@@ -62,10 +62,10 @@ func (c *TaskCommand) RunContext(ctx context.Context, args []string) error {
 		fromEnv := os.Getenv(TraceParentEnvVar)
 
 		if fromEnv == "" {
-			return fmt.Errorf("no trace parent from env and first arg wasnt trace")
+			return fmt.Errorf("the first argument wasn't a valid traceParent, and the $%s envvar was not specified", TraceParentEnvVar)
 
 		} else if _, _, err := tracing.ParseTraceParent(fromEnv); err != nil {
-			return fmt.Errorf(" trace parent from env was invalid")
+			return fmt.Errorf("the traceParent from $%s was invalid: %w", TraceParentEnvVar, err)
 		}
 
 		traceParent = fromEnv
@@ -73,20 +73,13 @@ func (c *TaskCommand) RunContext(ctx context.Context, args []string) error {
 	}
 
 	if len(commandAndArgs) == 0 {
-		return fmt.Errorf("you must specify a command")
+		return fmt.Errorf("you must specify a command to run")
 	}
 
-	var quoted []string
-	for _, s := range commandAndArgs {
-		quoted = append(quoted, fmt.Sprintf("\"%s\"", strings.Replace(s, "\"", "\\\"", -1)))
-	}
-
-	script := strings.Join(quoted, " ")
+	script := buildShellScript(commandAndArgs)
 
 	startTime := c.now()
-
 	taskError := runTask(script)
-
 	finishTime := c.now()
 
 	tracer, err := c.createTracer(ctx, nil)
@@ -128,6 +121,16 @@ func (c *TaskCommand) buildTaskName(command []string) string {
 	}
 
 	return strings.Join(command, " ")
+}
+
+func buildShellScript(commandAndArgs []string) string {
+	var quoted []string
+	for _, s := range commandAndArgs {
+		quoted = append(quoted, fmt.Sprintf("\"%s\"", strings.Replace(s, "\"", "\\\"", -1)))
+	}
+
+	return strings.Join(quoted, " ")
+
 }
 
 func runTask(script string) error {
