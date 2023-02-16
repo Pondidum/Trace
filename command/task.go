@@ -25,6 +25,8 @@ func NewTaskCommand(ui cli.Ui) (*TaskCommand, error) {
 
 type TaskCommand struct {
 	Base
+
+	taskName string
 }
 
 func (c *TaskCommand) Name() string {
@@ -37,6 +39,8 @@ func (c *TaskCommand) Synopsis() string {
 
 func (c *TaskCommand) Flags() *pflag.FlagSet {
 	flags := pflag.NewFlagSet(c.Name(), pflag.ContinueOnError)
+
+	flags.StringVar(&c.taskName, "name", "", "name the task running")
 	return flags
 }
 
@@ -90,8 +94,10 @@ func (c *TaskCommand) RunContext(ctx context.Context, args []string) error {
 		return err
 	}
 
+	taskName := c.buildTaskName(commandAndArgs)
+
 	spanContext := tracing.WithTraceParent(context.Background(), traceParent)
-	_, span := tracer.Start(spanContext, "later", trace.WithTimestamp(time.Unix(0, startTime)))
+	_, span := tracer.Start(spanContext, taskName, trace.WithTimestamp(time.Unix(0, startTime)))
 
 	span.SetAttributes(
 		attribute.String("command.executable", commandAndArgs[0]),
@@ -113,6 +119,15 @@ func (c *TaskCommand) RunContext(ctx context.Context, args []string) error {
 	span.End(trace.WithTimestamp(time.Unix(0, finishTime)))
 
 	return taskError
+}
+
+func (c *TaskCommand) buildTaskName(command []string) string {
+
+	if strings.TrimSpace(c.taskName) != "" {
+		return c.taskName
+	}
+
+	return strings.Join(command, " ")
 }
 
 func runTask(script string) error {

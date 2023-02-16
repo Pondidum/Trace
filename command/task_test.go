@@ -21,6 +21,7 @@ func TestTaskArgumentParsing(t *testing.T) {
 		expectedError      string
 		expectedScript     string
 		expectedSpanStatus codes.Code
+		expectedSpanName   string
 	}{
 		{
 			description:   "no args and no environment",
@@ -50,18 +51,20 @@ func TestTaskArgumentParsing(t *testing.T) {
 			expectedExit: 1,
 		},
 		{
-			description:    "trace parent and command without double dash",
-			traceParent:    NewTraceParent(),
-			args:           []string{"echo", "hello", "world"},
-			expectedExit:   0,
-			expectedScript: `"echo" "hello" "world"`,
+			description:      "trace parent and command without double dash",
+			traceParent:      NewTraceParent(),
+			args:             []string{"echo", "hello", "world"},
+			expectedExit:     0,
+			expectedScript:   `"echo" "hello" "world"`,
+			expectedSpanName: "echo hello world",
 		},
 		{
-			description:    "trace parent and command with double dash",
-			traceParent:    NewTraceParent(),
-			args:           []string{"--", "echo", "hello", "world"},
-			expectedExit:   0,
-			expectedScript: `"echo" "hello" "world"`,
+			description:      "trace parent and command with double dash",
+			traceParent:      NewTraceParent(),
+			args:             []string{"--", "echo", "hello", "world"},
+			expectedExit:     0,
+			expectedScript:   `"echo" "hello" "world"`,
+			expectedSpanName: "echo hello world",
 		},
 		{
 			description:  "failing command",
@@ -74,6 +77,13 @@ func TestTaskArgumentParsing(t *testing.T) {
 			traceParent:  NewTraceParent(),
 			args:         []string{"--", "exit", "8"},
 			expectedExit: 8,
+		},
+		{
+			description:      "name flag specified",
+			traceParent:      NewTraceParent(),
+			args:             []string{"--name", "different", "--", "echo", "hello"},
+			expectedExit:     0,
+			expectedSpanName: "different",
 		},
 	}
 
@@ -101,6 +111,12 @@ func TestTaskArgumentParsing(t *testing.T) {
 				attrs := mapFromAttributes(span.Attributes())
 
 				assert.Equal(t, tc.expectedScript, attrs["shell_script"])
+			}
+
+			if tc.expectedSpanName != "" {
+				span := exporter.Spans[0]
+
+				assert.Equal(t, tc.expectedSpanName, span.Name())
 			}
 
 			if tc.expectedSpanStatus != codes.Unset {
