@@ -32,7 +32,7 @@ func NewBase(ui cli.Ui, cmd NamedCommand) Base {
 		Ui:  ui,
 		cmd: cmd,
 
-		now: time.Now().UnixNano,
+		now: func() int64 { return time.Now().UnixNano() },
 	}
 }
 
