@@ -8,6 +8,7 @@ import (
 	"strings"
 	"testing"
 	"time"
+	"trace/tracing"
 
 	"github.com/mitchellh/cli"
 	"github.com/stretchr/testify/assert"
@@ -36,12 +37,12 @@ func TestSpanStartArgumentParsing(t *testing.T) {
 		},
 		{
 			description:  "span name and trace parent",
-			args:         []string{"test_span", NewTraceParent()},
+			args:         []string{"test_span", tracing.NewTraceParent()},
 			expectedExit: 0,
 		},
 		{
 			description:  "span name and trace parent from env",
-			traceParent:  NewTraceParent(),
+			traceParent:  tracing.NewTraceParent(),
 			args:         []string{"test_span"},
 			expectedExit: 0,
 		},
@@ -85,10 +86,10 @@ func TestSpanStart(t *testing.T) {
 		return now
 	}
 
-	parentTrace := NewTraceID()
-	parentSpan := NewSpanID()
+	parentTrace := tracing.NewTraceID()
+	parentSpan := tracing.NewSpanID()
 
-	assert.Equal(t, 0, cmd.Run([]string{"test-generate", AsTraceParent(parentTrace, parentSpan)}))
+	assert.Equal(t, 0, cmd.Run([]string{"test-generate", tracing.AsTraceParent(parentTrace, parentSpan)}))
 
 	traceParent := ui.OutputWriter.String()
 	filepath := path.Join(os.TempDir(), "trace", "state", strings.TrimSpace(traceParent))

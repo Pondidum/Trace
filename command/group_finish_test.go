@@ -15,7 +15,7 @@ import (
 
 func TestParentingSpans(t *testing.T) {
 
-	tp := NewTraceParent()
+	tp := tracing.NewTraceParent()
 	trace, parentSpan, _ := tracing.ParseTraceParent(tp)
 	exporter := tracing.NewMemoryExporter()
 
@@ -62,7 +62,7 @@ func TestSpanFinish(t *testing.T) {
 }
 
 func startTrace() string {
-	return NewTraceParent()
+	return tracing.NewTraceParent()
 }
 
 func startSpan(trace string) string {

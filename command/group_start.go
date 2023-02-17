@@ -59,8 +59,8 @@ func (c *GroupStartCommand) RunContext(ctx context.Context, args []string) error
 		return err
 	}
 
-	sid := NewSpanID()
-	newTraceParent := AsTraceParent(tid, sid)
+	sid := tracing.NewSpanID()
+	newTraceParent := tracing.AsTraceParent(tid, sid)
 
 	data := map[string]any{
 		"name":   name,

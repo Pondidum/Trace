@@ -67,7 +67,7 @@ func (c *GroupFinishCommand) RunContext(ctx context.Context, args []string) erro
 		return err
 	}
 
-	parentSpanId := AsTraceParent(traceId, parentSpan)
+	parentSpanId := tracing.AsTraceParent(traceId, parentSpan)
 
 	ids, err := tracing.ContinueExisting(groupId)
 	if err != nil {

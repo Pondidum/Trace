@@ -3,6 +3,7 @@ package command
 import (
 	"context"
 	"fmt"
+	"trace/tracing"
 
 	"github.com/mitchellh/cli"
 	"github.com/spf13/pflag"
@@ -43,7 +44,7 @@ func (c *StartCommand) RunContext(ctx context.Context, args []string) error {
 	}
 
 	name := args[0]
-	traceParent := NewTraceParent()
+	traceParent := tracing.NewTraceParent()
 
 	err := c.writeState(traceParent, map[string]any{
 		"name":  name,

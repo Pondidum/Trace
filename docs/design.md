@@ -73,6 +73,7 @@ Flags:
 - takes 1 or 2 arguments: `name` and `trace_parent`
 - if `trace_parent` isn't specified, defaults to `TRACEPARENT`
 - prints a traceid which can be captured in a variable or exported
+- if there is no traceid, it _will_ complain
 
 ```sh
 span=$(trace span start "fetch_tools")
