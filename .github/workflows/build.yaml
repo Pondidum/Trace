@@ -38,8 +38,17 @@ jobs:
         CGO_ENABLED: "0"
       run: go build -ldflags="-X trace/version.GitCommit=${{ github.sha }} -X trace/version.Prerelease="""
 
+    - name: Start Jaeger Stack
+      uses: isbang/compose-action@v1.4.1
+
     - name: Test
       run: go test -v ./...
+
+    - name: Run Example
+      run: |
+        cd example/basic
+        ./build.sh
+
 
     - name: Store Artifacts
       uses: actions/upload-artifact@v3
