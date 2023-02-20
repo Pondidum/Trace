@@ -49,12 +49,22 @@ jobs:
         cd example/basic
         ./build.sh
 
+        traceid=$(cut -d"-" -f2 ".traceid")
+        jaeger_url="http://localhost:16686/api/traces/${traceid}?prettyPrint=true"
 
-    - name: Store Artifacts
+        curl "${jaeger_url}" -o "trace.json"
+
+    - name: Store Trace Binary
       uses: actions/upload-artifact@v3
       with:
         name: trace
         path: trace
+
+    - name: Store Trace Json
+      uses: actions/upload-artifact@v3
+      with:
+        name: trace.json
+        path: example/basic/trace.json
 
     - name: Generate Release Notes
       if: github.ref_name == 'main'

@@ -5,6 +5,9 @@ export "PATH=${PATH}:../../"
 # start of build
 export TRACEPARENT="$(trace start "basic-build")"
 
+# not needed normally!
+# just done so we can query the trace after this has run in the github actions build
+echo "${TRACEPARENT}" > .traceid
 
 clone=$(trace group start "clone_artifacts")
   # git pull
