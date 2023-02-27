@@ -3,14 +3,11 @@ package command
 import (
 	"context"
 	"strconv"
-	"strings"
 	"testing"
 	"time"
 	"trace/tracing"
 
-	"github.com/mitchellh/cli"
 	"github.com/stretchr/testify/assert"
-	"go.opentelemetry.io/otel/sdk/trace"
 )
 
 func TestParentingSpans(t *testing.T) {
@@ -59,30 +56,6 @@ func TestSpanFinish(t *testing.T) {
 	assert.Equal(t, traceId.String(), span.Parent().TraceID().String(), "wrong parent trace")
 	assert.Equal(t, spanId.String(), span.SpanContext().SpanID().String(), "wrong id")
 	assert.Equal(t, parentSpan.String(), span.Parent().SpanID().String(), "wrong parent id")
-}
-
-func startTrace() string {
-	return tracing.NewTraceParent()
-}
-
-func startSpan(trace string) string {
-
-	ui := cli.NewMockUi()
-	start, _ := NewGroupStartCommand(ui)
-	start.Run([]string{"tests", trace})
-	tp := strings.TrimSpace(ui.OutputWriter.String())
-
-	return tp
-}
-
-func finishSpan(span string) trace.ReadOnlySpan {
-	ui := cli.NewMockUi()
-	exporter := tracing.NewMemoryExporter()
-	cmd, _ := NewGroupFinishCommand(ui)
-	cmd.testSpanExporter = exporter
-	cmd.now = func() int64 { return time.Now().Add(10 * time.Second).UnixNano() }
-
-	cmd.Run([]string{span})
 
 	return exporter.Spans[0]
 }
