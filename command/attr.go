@@ -91,7 +91,7 @@ func mapFromKeyValues(pairs []string) (map[string]any, error) {
 			return nil, fmt.Errorf("'%s' was not a valid key=value pair", pair)
 		}
 
-		m[k] = v
+		m["attr."+k] = v
 	}
 
 	return m, nil

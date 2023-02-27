@@ -3,17 +3,20 @@ package tracing
 import (
 	"fmt"
 	"reflect"
+	"strings"
 	"time"
 
 	"go.opentelemetry.io/otel/attribute"
 )
 
-func FromMap[V any](m map[string]V) []attribute.KeyValue {
+func AttributesFromMap[V any](m map[string]V) []attribute.KeyValue {
 
 	attrs := make([]attribute.KeyValue, 0, len(m))
 
 	for k, v := range m {
-		attrs = append(attrs, asAttribute(k, v))
+		if strings.HasPrefix(k, "attr.") {
+			attrs = append(attrs, asAttribute(strings.TrimPrefix(k, "attr."), v))
+		}
 	}
 
 	return attrs

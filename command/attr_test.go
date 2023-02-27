@@ -35,7 +35,7 @@ func TestAttributes(t *testing.T) {
 			traceParent: tracing.NewTraceParent(),
 			args:        []string{"one=true"},
 			expectedAttrs: map[string]string{
-				"one": "true",
+				"attr.one": "true",
 			},
 		},
 	}
@@ -88,15 +88,15 @@ func TestPairParsing(t *testing.T) {
 			description: "one valid pair",
 			input:       []string{"test=yes"},
 			result: map[string]any{
-				"test": "yes",
+				"attr.test": "yes",
 			},
 		},
 		{
 			description: "two valid pairs",
 			input:       []string{"one=true", "two=false"},
 			result: map[string]any{
-				"one": "true",
-				"two": "false",
+				"attr.one": "true",
+				"attr.two": "false",
 			},
 		},
 		{

@@ -87,7 +87,7 @@ func createRootSpan(tp trace.Tracer, traceParent string, finish int64, props map
 
 	delete(props, "name")
 	delete(props, "start")
-	attrs := tracing.FromMap(props)
+	attrs := tracing.AttributesFromMap(props)
 	span.SetAttributes(attrs...)
 
 	span.End(trace.WithTimestamp(time.Unix(0, finish)))
