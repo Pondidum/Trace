@@ -22,6 +22,8 @@ func NewGroupFinishCommand(ui cli.Ui) (*GroupFinishCommand, error) {
 
 type GroupFinishCommand struct {
 	Base
+
+	attrPairs []string
 }
 
 func (c *GroupFinishCommand) Name() string {
@@ -34,6 +36,7 @@ func (c *GroupFinishCommand) Synopsis() string {
 
 func (c *GroupFinishCommand) Flags() *pflag.FlagSet {
 	flags := pflag.NewFlagSet(c.Name(), pflag.ContinueOnError)
+	flags.StringSliceVar(&c.attrPairs, "attr", []string{}, "")
 	return flags
 }
 
@@ -52,14 +55,23 @@ func (c *GroupFinishCommand) RunContext(ctx context.Context, args []string) erro
 		return fmt.Errorf("this command takes 1 argument: groupid")
 	}
 
+	traceId, _, err := tracing.ParseTraceParent(groupId)
+	if err != nil {
+		return err
+	}
+
 	state, err := c.readState(groupId)
 	if err != nil {
 		return err
 	}
 
-	traceId, _, err := tracing.ParseTraceParent(groupId)
+	attrs, err := mapFromKeyValues(c.attrPairs)
 	if err != nil {
 		return err
+	}
+
+	for k, v := range attrs {
+		state[k] = v
 	}
 
 	parentSpan, err := trace.SpanIDFromHex(state["parent"])

@@ -77,24 +77,24 @@ func TestPairParsing(t *testing.T) {
 		description string
 		input       []string
 		err         string
-		result      map[string]any
+		result      map[string]string
 	}{
 		{
 			description: "empty input",
 			input:       []string{},
-			result:      map[string]any{},
+			result:      map[string]string{},
 		},
 		{
 			description: "one valid pair",
 			input:       []string{"test=yes"},
-			result: map[string]any{
+			result: map[string]string{
 				"attr.test": "yes",
 			},
 		},
 		{
 			description: "two valid pairs",
 			input:       []string{"one=true", "two=false"},
-			result: map[string]any{
+			result: map[string]string{
 				"attr.one": "true",
 				"attr.two": "false",
 			},

@@ -22,6 +22,7 @@ func TestTaskArgumentParsing(t *testing.T) {
 		expectedScript     string
 		expectedSpanStatus codes.Code
 		expectedSpanName   string
+		expectedAttrs      map[string]string
 	}{
 		{
 			description:   "no args and no environment",
@@ -85,6 +86,15 @@ func TestTaskArgumentParsing(t *testing.T) {
 			expectedExit:     0,
 			expectedSpanName: "different",
 		},
+		{
+			description:  "attributes specified",
+			traceParent:  tracing.NewTraceParent(),
+			args:         []string{"--attr", "flag_enabled=true", "--", "echo", "hello"},
+			expectedExit: 0,
+			expectedAttrs: map[string]string{
+				"flag_enabled": "true",
+			},
+		},
 	}
 
 	for _, tc := range cases {
@@ -122,6 +132,15 @@ func TestTaskArgumentParsing(t *testing.T) {
 			if tc.expectedSpanStatus != codes.Unset {
 				span := exporter.Spans[0]
 				assert.Equal(t, tc.expectedSpanStatus, span.Status().Code)
+			}
+
+			if len(tc.expectedAttrs) > 0 {
+				span := exporter.Spans[0]
+				attrs := mapFromAttributes(span.Attributes())
+
+				for key, val := range tc.expectedAttrs {
+					assert.Equal(t, val, attrs[key])
+				}
 			}
 		})
 	}

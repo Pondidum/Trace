@@ -3,6 +3,7 @@ package command
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"trace/tracing"
 
 	"github.com/mitchellh/cli"
@@ -18,6 +19,8 @@ func NewStartCommand(ui cli.Ui) (*StartCommand, error) {
 
 type StartCommand struct {
 	Base
+
+	attrPairs []string
 }
 
 func (c *StartCommand) Name() string {
@@ -30,6 +33,9 @@ func (c *StartCommand) Synopsis() string {
 
 func (c *StartCommand) Flags() *pflag.FlagSet {
 	flags := pflag.NewFlagSet(c.Name(), pflag.ContinueOnError)
+
+	flags.StringSliceVar(&c.attrPairs, "attr", []string{}, "")
+
 	return flags
 }
 
@@ -46,12 +52,15 @@ func (c *StartCommand) RunContext(ctx context.Context, args []string) error {
 	name := args[0]
 	traceParent := tracing.NewTraceParent()
 
-	err := c.writeState(traceParent, map[string]any{
-		"name":  name,
-		"start": c.now(),
-	})
-
+	data, err := mapFromKeyValues(c.attrPairs)
 	if err != nil {
+		return err
+	}
+
+	data["name"] = name
+	data["start"] = strconv.FormatInt(c.now(), 10)
+
+	if err := c.writeState(traceParent, data); err != nil {
 		return err
 	}
 

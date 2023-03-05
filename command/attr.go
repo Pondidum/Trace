@@ -75,8 +75,8 @@ func (c *AttrCommand) RunContext(ctx context.Context, args []string) error {
 	return nil
 }
 
-func mapFromKeyValues(pairs []string) (map[string]any, error) {
-	m := make(map[string]any, len(pairs))
+func mapFromKeyValues(pairs []string) (map[string]string, error) {
+	m := make(map[string]string, len(pairs))
 
 	for _, pair := range pairs {
 		split := strings.Split(pair, "=")

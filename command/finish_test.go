@@ -49,7 +49,7 @@ func TestFinishingTrace(t *testing.T) {
 		ui := cli.NewMockUi()
 		start, _ := NewStartCommand(ui)
 		start.now = func() int64 { return startTime }
-		start.Run([]string{"tests"})
+		start.Run([]string{"tests", "--attr", "at_start=true"})
 		tp := strings.TrimSpace(ui.OutputWriter.String())
 
 		startTrace, startSpan, err := tracing.ParseTraceParent(tp)
@@ -58,7 +58,7 @@ func TestFinishingTrace(t *testing.T) {
 		// finish the trace 10 seconds later
 		cmd, _, exporter := createTestFinishCommand()
 		cmd.now = func() int64 { return endTime }
-		assert.Equal(t, 0, cmd.Run([]string{tp}), ui.ErrorWriter.String())
+		assert.Equal(t, 0, cmd.Run([]string{tp, "--attr", "at_finish=true"}), ui.ErrorWriter.String())
 
 		span := exporter.Spans[0]
 		assert.Len(t, exporter.Spans, 1)
@@ -68,6 +68,10 @@ func TestFinishingTrace(t *testing.T) {
 		assert.Equal(t, endTime, span.EndTime().UnixNano())
 		assert.Equal(t, startTrace.String(), span.SpanContext().TraceID().String())
 		assert.Equal(t, startSpan.String(), span.SpanContext().SpanID().String())
+
+		attrs := mapFromAttributes(span.Attributes())
+		assert.Equal(t, "true", attrs["at_start"])
+		assert.Equal(t, "true", attrs["at_finish"])
 	})
 
 }

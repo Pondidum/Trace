@@ -26,7 +26,8 @@ func NewTaskCommand(ui cli.Ui) (*TaskCommand, error) {
 type TaskCommand struct {
 	Base
 
-	taskName string
+	taskName  string
+	attrPairs []string
 }
 
 func (c *TaskCommand) Name() string {
@@ -41,6 +42,8 @@ func (c *TaskCommand) Flags() *pflag.FlagSet {
 	flags := pflag.NewFlagSet(c.Name(), pflag.ContinueOnError)
 
 	flags.StringVar(&c.taskName, "name", "", "name the task running")
+	flags.StringSliceVar(&c.attrPairs, "attr", []string{}, "")
+
 	return flags
 }
 
@@ -76,6 +79,11 @@ func (c *TaskCommand) RunContext(ctx context.Context, args []string) error {
 		return fmt.Errorf("you must specify a command to run")
 	}
 
+	attrs, err := mapFromKeyValues(c.attrPairs)
+	if err != nil {
+		return err
+	}
+
 	script := buildShellScript(commandAndArgs)
 
 	startTime := c.now()
@@ -91,6 +99,10 @@ func (c *TaskCommand) RunContext(ctx context.Context, args []string) error {
 
 	spanContext := tracing.WithTraceParent(context.Background(), traceParent)
 	_, span := tracer.Start(spanContext, taskName, trace.WithTimestamp(time.Unix(0, startTime)))
+
+	span.SetAttributes(
+		tracing.AttributesFromMap(attrs)...,
+	)
 
 	span.SetAttributes(
 		attribute.String("command.executable", commandAndArgs[0]),

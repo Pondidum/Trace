@@ -39,13 +39,13 @@ func TestSpanFinish(t *testing.T) {
 	trace := startTrace()
 	traceId, parentSpan, _ := tracing.ParseTraceParent(trace)
 
-	s := startSpan(trace)
+	s := startSpan(trace, "--attr", "at_start=true")
 	_, spanId, _ := tracing.ParseTraceParent(s)
 
 	addAttributes(s, "cached=false", "cache_size=5")
 
 	// finish the trace 10 seconds later
-	span := finishSpan(s)
+	span := finishSpan(s, "--attr", "at_finish=true")
 
 	// debug information
 	t.Log("trace :", traceId.String())
@@ -62,6 +62,8 @@ func TestSpanFinish(t *testing.T) {
 	attrs := mapFromAttributes(span.Attributes())
 	assert.Contains(t, attrs, "cached")
 	assert.Contains(t, attrs, "cache_size")
-	assert.Equal(t, attrs["cached"], "false")
-	assert.Equal(t, attrs["cache_size"], "5")
+	assert.Equal(t, "false", attrs["cached"])
+	assert.Equal(t, "5", attrs["cache_size"])
+	assert.Equal(t, "true", attrs["at_start"])
+	assert.Equal(t, "true", attrs["at_finish"])
 }

@@ -89,7 +89,7 @@ func TestSpanStart(t *testing.T) {
 	parentTrace := tracing.NewTraceID()
 	parentSpan := tracing.NewSpanID()
 
-	assert.Equal(t, 0, cmd.Run([]string{"test-generate", tracing.AsTraceParent(parentTrace, parentSpan)}))
+	assert.Equal(t, 0, cmd.Run([]string{"test-generate", tracing.AsTraceParent(parentTrace, parentSpan), "--attr", "count=5"}))
 
 	traceParent := ui.OutputWriter.String()
 	filepath := path.Join(os.TempDir(), "trace", "state", strings.TrimSpace(traceParent))
@@ -100,4 +100,5 @@ func TestSpanStart(t *testing.T) {
 	assert.Contains(t, string(content), "name=test-generate")
 	assert.Contains(t, string(content), fmt.Sprintf("start=%v", now))
 	assert.Contains(t, string(content), fmt.Sprintf("parent=%s", parentSpan))
+	assert.Contains(t, string(content), "attr.count=5")
 }

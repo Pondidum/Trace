@@ -24,7 +24,7 @@ func TestStarting(t *testing.T) {
 		return now
 	}
 
-	assert.Equal(t, 0, cmd.Run([]string{"test-generate"}))
+	assert.Equal(t, 0, cmd.Run([]string{"test-generate", "--attr", "branch=testing", "--attr", "trigger=cron"}))
 
 	traceParent := ui.OutputWriter.String()
 	assert.Regexp(t, `^[[:xdigit:]]{2}-[[:xdigit:]]{32}-[[:xdigit:]]{16}-[[:xdigit:]]{2}\n`, traceParent)
@@ -36,4 +36,6 @@ func TestStarting(t *testing.T) {
 
 	assert.Contains(t, string(content), "name=test-generate")
 	assert.Contains(t, string(content), fmt.Sprintf("start=%v", now))
+	assert.Contains(t, string(content), "attr.branch=testing")
+	assert.Contains(t, string(content), "attr.trigger=cron")
 }

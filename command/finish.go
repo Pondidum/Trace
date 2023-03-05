@@ -22,6 +22,8 @@ func NewFinishCommand(ui cli.Ui) (*FinishCommand, error) {
 
 type FinishCommand struct {
 	Base
+
+	attrPairs []string
 }
 
 func (c *FinishCommand) Name() string {
@@ -34,6 +36,9 @@ func (c *FinishCommand) Synopsis() string {
 
 func (c *FinishCommand) Flags() *pflag.FlagSet {
 	flags := pflag.NewFlagSet(c.Name(), pflag.ContinueOnError)
+
+	flags.StringSliceVar(&c.attrPairs, "attr", []string{}, "")
+
 	return flags
 }
 
@@ -52,14 +57,23 @@ func (c *FinishCommand) RunContext(ctx context.Context, args []string) error {
 		return fmt.Errorf("this command takes 1 argument: traceparent")
 	}
 
+	ids, err := tracing.ContinueExisting(traceParent)
+	if err != nil {
+		return err
+	}
+
 	state, err := c.readState(traceParent)
 	if err != nil {
 		return err
 	}
 
-	ids, err := tracing.ContinueExisting(traceParent)
+	attrs, err := mapFromKeyValues(c.attrPairs)
 	if err != nil {
 		return err
+	}
+
+	for k, v := range attrs {
+		state[k] = v
 	}
 
 	tracer, err := c.createTracer(ctx, ids)

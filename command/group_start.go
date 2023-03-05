@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strconv"
 	"trace/tracing"
 
 	"github.com/mitchellh/cli"
@@ -19,6 +20,8 @@ func NewGroupStartCommand(ui cli.Ui) (*GroupStartCommand, error) {
 
 type GroupStartCommand struct {
 	Base
+
+	attrPairs []string
 }
 
 func (c *GroupStartCommand) Name() string {
@@ -31,6 +34,8 @@ func (c *GroupStartCommand) Synopsis() string {
 
 func (c *GroupStartCommand) Flags() *pflag.FlagSet {
 	flags := pflag.NewFlagSet(c.Name(), pflag.ContinueOnError)
+	flags.StringSliceVar(&c.attrPairs, "attr", []string{}, "")
+
 	return flags
 }
 
@@ -62,11 +67,14 @@ func (c *GroupStartCommand) RunContext(ctx context.Context, args []string) error
 	sid := tracing.NewSpanID()
 	newTraceParent := tracing.AsTraceParent(tid, sid)
 
-	data := map[string]any{
-		"name":   name,
-		"start":  c.now(),
-		"parent": parentSid.String(),
+	data, err := mapFromKeyValues(c.attrPairs)
+	if err != nil {
+		return err
 	}
+
+	data["name"] = name
+	data["start"] = strconv.FormatInt(c.now(), 10)
+	data["parent"] = parentSid.String()
 
 	if err := c.writeState(newTraceParent, data); err != nil {
 		return err

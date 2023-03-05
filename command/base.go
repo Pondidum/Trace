@@ -140,7 +140,7 @@ func (b *Base) createTracer(ctx context.Context, g tracesdk.IDGenerator) (trace.
 	return tp.Tracer("trace-cli"), nil
 }
 
-func (b *Base) writeState(traceParent string, data map[string]any) error {
+func (b *Base) writeState(traceParent string, data map[string]string) error {
 
 	dir := path.Join(os.TempDir(), "trace", "state")
 

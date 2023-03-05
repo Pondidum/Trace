@@ -13,24 +13,24 @@ func startTrace() string {
 	return tracing.NewTraceParent()
 }
 
-func startSpan(trace string) string {
+func startSpan(trace string, extra ...string) string {
 
 	ui := cli.NewMockUi()
 	start, _ := NewGroupStartCommand(ui)
-	start.Run([]string{"tests", trace})
+	start.Run(append([]string{"tests", trace}, extra...))
 	tp := strings.TrimSpace(ui.OutputWriter.String())
 
 	return tp
 }
 
-func finishSpan(span string) trace.ReadOnlySpan {
+func finishSpan(span string, extra ...string) trace.ReadOnlySpan {
 	ui := cli.NewMockUi()
 	exporter := tracing.NewMemoryExporter()
 	cmd, _ := NewGroupFinishCommand(ui)
 	cmd.testSpanExporter = exporter
 	cmd.now = func() int64 { return time.Now().Add(10 * time.Second).UnixNano() }
 
-	cmd.Run([]string{span})
+	cmd.Run(append([]string{span}, extra...))
 
 	return exporter.Spans[0]
 }
