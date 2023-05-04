@@ -2,8 +2,10 @@ package tracing
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"net/url"
+	"os"
 	"regexp"
 	"strings"
 
@@ -13,9 +15,47 @@ import (
 	otlphttp "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 )
 
+const OtlpEndpointEnvVar = "OTEL_EXPORTER_OTLP_ENDPOINT"
+const OtlpTracesEndpointEnvVar = "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT"
+const OtlpHeaders = "OTEL_EXPORTER_OTLP_HEADERS"
+
 type ExporterConfig struct {
 	Endpoint string
 	Headers  map[string]string
+}
+
+func DefaultConfig() *ExporterConfig {
+	return &ExporterConfig{
+		Endpoint: "localhost:4317",
+		Headers:  map[string]string{},
+	}
+}
+
+func ConfigFromEnvironment() (*ExporterConfig, error) {
+
+	config := DefaultConfig()
+
+	if val := os.Getenv(OtlpTracesEndpointEnvVar); val != "" {
+		config.Endpoint = val
+	} else if val := os.Getenv(OtlpEndpointEnvVar); val != "" {
+		config.Endpoint = val
+	}
+
+	if val := os.Getenv(OtlpHeaders); val != "" {
+		for _, pair := range strings.Split(val, ",") {
+			index := strings.Index(pair, ":")
+			if index == -1 {
+				return nil, fmt.Errorf("unable to parse '%s' as a key:value pair, missing a ':'", pair)
+			}
+
+			key := strings.TrimSpace(pair[0:index])
+			val := strings.TrimSpace(pair[index+1:])
+
+			config.Headers[key] = val
+		}
+	}
+
+	return config, nil
 }
 
 func CreateExporter(ctx context.Context, conf *ExporterConfig) (tracesdk.SpanExporter, error) {

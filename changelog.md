@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.3] - 2023-05-04
+
+### Added
+
+* Support configuring the OTLP endpoint via environment variables
+
 ## [0.0.2] - 2023-03-05
 
 ### Added

@@ -28,6 +28,7 @@ type Base struct {
 }
 
 func NewBase(ui cli.Ui, cmd NamedCommand) Base {
+
 	return Base{
 		Ui:  ui,
 		cmd: cmd,
@@ -123,11 +124,12 @@ func (b *Base) createTracer(ctx context.Context, g tracesdk.IDGenerator) (trace.
 	exporter := b.testSpanExporter
 
 	if exporter == nil {
-		var err error
-		exporter, err = tracing.CreateExporter(ctx, &tracing.ExporterConfig{
-			Endpoint: "localhost:4317",
-		})
+		cfg, err := tracing.ConfigFromEnvironment()
 		if err != nil {
+			return nil, err
+		}
+
+		if exporter, err = tracing.CreateExporter(ctx, cfg); err != nil {
 			return nil, err
 		}
 	}

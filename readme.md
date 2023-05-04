@@ -12,7 +12,14 @@
 
 ### Configuration
 
-By default, traces are send to `localhost:4317` using `gRPC` in `OTLP` protocol.
+By default, traces are send to `localhost:4317` using `gRPC` in `OTLP` protocol.  This can be overridden using the `OTEL_EXPORTER_OTLP_ENDPOINT` or `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT` environment variables.  Additionally, headers can be sent to the OTLP backend by setting the `OTEL_EXPORTER_OTLP_HEADERS` value (a csv of `key:value` pairs.)
+
+For example, to send traces to Honeycomb's gRPC endpoint:
+
+```shell
+export OTEL_EXPORTER_OTLP_ENDPOINT=api.honeycomb.io:443
+export OTEL_EXPORTER_OTLP_HEADERS="x-honeycomb-team=your-api-key"
+```
 
 ### Grouping
 
