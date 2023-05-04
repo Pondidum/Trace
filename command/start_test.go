@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -38,4 +39,28 @@ func TestStarting(t *testing.T) {
 	assert.Contains(t, string(content), fmt.Sprintf("start=%v", now))
 	assert.Contains(t, string(content), "attr.branch=testing")
 	assert.Contains(t, string(content), "attr.trigger=cron")
+}
+
+func TestTimestamps(t *testing.T) {
+	t.Parallel()
+
+	ui := cli.NewMockUi()
+	cmd, _ := NewStartCommand(ui)
+
+	now := time.Now().UnixNano()
+	cmd.Base.now = func() int64 {
+		return now
+	}
+
+	when := time.Now().Add(-30 * time.Second)
+
+	exitCode := cmd.Run([]string{"custom-time", "--when", when.Format(ISO8601)})
+	assert.Zero(t, exitCode, "should not error when running")
+	traceParent := strings.TrimSpace(ui.OutputWriter.String())
+
+	state, err := cmd.readState(traceParent)
+	assert.NoError(t, err)
+
+	assert.Equal(t, strconv.FormatInt(when.Round(time.Second).UnixNano(), 10), state["start"])
+
 }

@@ -5,6 +5,7 @@
 ### Added
 
 * Support configuring the OTLP endpoint via environment variables
+* `start` now supports a `--from <date>` argument to allow using a different time for when a trace starts
 
 ## [0.0.2] - 2023-03-05
 

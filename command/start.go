@@ -4,11 +4,14 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"time"
 	"trace/tracing"
 
 	"github.com/mitchellh/cli"
 	"github.com/spf13/pflag"
 )
+
+const ISO8601 = "2006-01-02T15:04:05-0700"
 
 func NewStartCommand(ui cli.Ui) (*StartCommand, error) {
 	cmd := &StartCommand{}
@@ -21,6 +24,7 @@ type StartCommand struct {
 	Base
 
 	attrPairs []string
+	startTime string
 }
 
 func (c *StartCommand) Name() string {
@@ -35,6 +39,7 @@ func (c *StartCommand) Flags() *pflag.FlagSet {
 	flags := pflag.NewFlagSet(c.Name(), pflag.ContinueOnError)
 
 	flags.StringSliceVar(&c.attrPairs, "attr", []string{}, "")
+	flags.StringVar(&c.startTime, "when", "", "ISO 8601 formatted time representing when the span starts")
 
 	return flags
 }
@@ -57,8 +62,19 @@ func (c *StartCommand) RunContext(ctx context.Context, args []string) error {
 		return err
 	}
 
+	startEpoch := c.now()
+
+	if c.startTime != "" {
+		t, err := time.Parse(ISO8601, c.startTime)
+		if err != nil {
+			return err
+		}
+
+		startEpoch = t.UnixNano()
+	}
+
 	data["name"] = name
-	data["start"] = strconv.FormatInt(c.now(), 10)
+	data["start"] = strconv.FormatInt(startEpoch, 10)
 
 	if err := c.writeState(traceParent, data); err != nil {
 		return err
