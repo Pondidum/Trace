@@ -4,6 +4,12 @@
 
 ### Added
 
+* Added github actions step to setup the tool: `pondidum/trace`
+
+## [0.0.4] - 2023-05-09
+
+### Added
+
 * `start` command's `--when` supports both `iso-8601` and `epoch-seconds` time formats now.
 
 ### Fixed
