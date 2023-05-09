@@ -39,7 +39,7 @@ func (c *StartCommand) Flags() *pflag.FlagSet {
 	flags := pflag.NewFlagSet(c.Name(), pflag.ContinueOnError)
 
 	flags.StringSliceVar(&c.attrPairs, "attr", []string{}, "")
-	flags.StringVar(&c.startTime, "when", "", "ISO 8601 formatted time representing when the span starts")
+	flags.StringVar(&c.startTime, "when", "", "ISO 8601 or epoch formatted time representing when the span starts")
 
 	return flags
 }
@@ -62,15 +62,9 @@ func (c *StartCommand) RunContext(ctx context.Context, args []string) error {
 		return err
 	}
 
-	startEpoch := c.now()
-
-	if c.startTime != "" {
-		t, err := time.Parse(ISO8601, c.startTime)
-		if err != nil {
-			return err
-		}
-
-		startEpoch = t.UnixNano()
+	startEpoch, err := c.startEpochNano()
+	if err != nil {
+		return err
 	}
 
 	data["name"] = name
@@ -82,4 +76,23 @@ func (c *StartCommand) RunContext(ctx context.Context, args []string) error {
 
 	c.Ui.Output(traceParent)
 	return nil
+}
+
+func (c *StartCommand) startEpochNano() (int64, error) {
+
+	if c.startTime == "" {
+		return c.now(), nil
+	}
+
+	seconds, err := strconv.ParseInt(c.startTime, 10, 64)
+	if err == nil {
+		return time.Unix(seconds, 0).UnixNano(), nil
+	}
+
+	t, err := time.Parse(ISO8601, c.startTime)
+	if err != nil {
+		return 0, err
+	}
+
+	return t.UnixNano(), nil
 }

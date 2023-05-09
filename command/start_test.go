@@ -44,23 +44,43 @@ func TestStarting(t *testing.T) {
 func TestTimestamps(t *testing.T) {
 	t.Parallel()
 
-	ui := cli.NewMockUi()
-	cmd, _ := NewStartCommand(ui)
-
-	now := time.Now().UnixNano()
-	cmd.Base.now = func() int64 {
-		return now
-	}
-
 	when := time.Now().Add(-30 * time.Second)
 
-	exitCode := cmd.Run([]string{"custom-time", "--when", when.Format(ISO8601)})
-	assert.Zero(t, exitCode, "should not error when running")
-	traceParent := strings.TrimSpace(ui.OutputWriter.String())
+	t.Run("iso-8601", func(t *testing.T) {
+		ui := cli.NewMockUi()
+		cmd, _ := NewStartCommand(ui)
 
-	state, err := cmd.readState(traceParent)
-	assert.NoError(t, err)
+		now := time.Now().UnixNano()
+		cmd.Base.now = func() int64 {
+			return now
+		}
 
-	assert.Equal(t, strconv.FormatInt(when.Round(time.Second).UnixNano(), 10), state["start"])
+		exitCode := cmd.Run([]string{"custom-time-iso", "--when", when.Format(ISO8601)})
+		assert.Zero(t, exitCode, "should not error when running")
+		traceParent := strings.TrimSpace(ui.OutputWriter.String())
 
+		state, err := cmd.readState(traceParent)
+		assert.NoError(t, err)
+
+		assert.Equal(t, strconv.FormatInt(when.Truncate(time.Second).UnixNano(), 10), state["start"])
+	})
+
+	t.Run("epoch", func(t *testing.T) {
+		ui := cli.NewMockUi()
+		cmd, _ := NewStartCommand(ui)
+
+		now := time.Now().UnixNano()
+		cmd.Base.now = func() int64 {
+			return now
+		}
+
+		exitCode := cmd.Run([]string{"custom-time-epoch", "--when", strconv.FormatInt(when.Unix(), 10)})
+		assert.Zero(t, exitCode, "should not error when running")
+		traceParent := strings.TrimSpace(ui.OutputWriter.String())
+
+		state, err := cmd.readState(traceParent)
+		assert.NoError(t, err)
+
+		assert.Equal(t, strconv.FormatInt(when.Truncate(time.Second).UnixNano(), 10), state["start"])
+	})
 }
