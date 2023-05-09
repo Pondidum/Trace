@@ -6,6 +6,10 @@
 
 * `start` command's `--when` supports both `iso-8601` and `epoch-seconds` time formats now.
 
+### Fixed
+
+* the `attr` command is now available!
+
 ## [0.0.3] - 2023-05-04
 
 ### Added
