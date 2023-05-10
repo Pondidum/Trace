@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.6] - 2023-05-10
+
+### Fixed
+
+* Improve `pondidum/trace` action's cache usage for GHE
+
 ## [0.0.5] - 2023-05-09
 
 ### Added
