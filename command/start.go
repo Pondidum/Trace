@@ -89,10 +89,16 @@ func (c *StartCommand) startEpochNano() (int64, error) {
 		return time.Unix(seconds, 0).UnixNano(), nil
 	}
 
-	t, err := time.Parse(ISO8601, c.startTime)
-	if err != nil {
-		return 0, err
+	supportedLayouts := []string{
+		ISO8601,
+		time.RFC3339,
 	}
 
-	return t.UnixNano(), nil
+	for _, layout := range supportedLayouts {
+		if t, err := time.Parse(layout, c.startTime); err == nil {
+			return t.UnixNano(), nil
+		}
+	}
+
+	return 0, fmt.Errorf("unsupported timestamp format.  Should be one of ISO8601, RFC3339, unix epoch")
 }

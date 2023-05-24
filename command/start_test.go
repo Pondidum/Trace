@@ -84,3 +84,35 @@ func TestTimestamps(t *testing.T) {
 		assert.Equal(t, strconv.FormatInt(when.Truncate(time.Second).UnixNano(), 10), state["start"])
 	})
 }
+
+func TestTime(t *testing.T) {
+
+	cases := []struct {
+		input  string
+		format string
+	}{
+		{
+			input:  "2023-05-22T09:46:00Z",
+			format: "RFC3339",
+		},
+		{
+			input:  strconv.FormatInt(time.Now().Add(-30*time.Second).Unix(), 10),
+			format: "unix",
+		},
+		{
+			input:  time.Now().Add(-30 * time.Second).Format(ISO8601),
+			format: "iso-8601",
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run("", func(t *testing.T) {
+			cmd, _ := NewStartCommand(cli.NewMockUi())
+			cmd.startTime = tc.input
+			_, err := cmd.startEpochNano()
+
+			// _, err := time.Parse(tc.format, tc.input)
+			assert.NoError(t, err)
+		})
+	}
+}

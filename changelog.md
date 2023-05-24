@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.7] - 2023-05-24
+
+### Added
+
+* `start` command's `--when` also supports `RFC3339` format dates
+
 ## [0.0.6] - 2023-05-10
 
 ### Fixed
