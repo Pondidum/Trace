@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.8] - 2023-05-25
+
+### Fixed
+
+* Action failed as it was using a shell script, which isn't supported with a `composite` action type
+
 ## [0.0.7] - 2023-05-24
 
 ### Added
