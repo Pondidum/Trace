@@ -38,16 +38,16 @@ func TestParentingSpans(t *testing.T) {
 }
 
 func TestSpanFinish(t *testing.T) {
-	trace := startTrace()
+	trace := tracing.NewTraceParent()
 	traceId, parentSpan, _ := tracing.ParseTraceParent(trace)
 
-	s := startSpan(trace, "--attr", "at_start=true")
+	s := startTestSpan(trace, "--attr", "at_start=true")
 	_, spanId, _ := tracing.ParseTraceParent(s)
 
 	addAttributes(s, "cached=false", "cache_size=5")
 
 	// finish the trace 10 seconds later
-	span := finishSpan(s, "--attr", "at_finish=true")
+	span := finishTestSpan(s, "--attr", "at_finish=true")
 
 	// debug information
 	t.Log("trace :", traceId.String())
@@ -71,7 +71,7 @@ func TestSpanFinish(t *testing.T) {
 }
 
 func TestSpanErrorFlag(t *testing.T) {
-	trace := startTrace()
+	trace := tracing.NewTraceParent()
 
 	cases := []struct {
 		commandLine     []string
@@ -98,8 +98,8 @@ func TestSpanErrorFlag(t *testing.T) {
 	for _, tc := range cases {
 		t.Run(strings.Join(tc.commandLine, "-"), func(t *testing.T) {
 
-			s := startSpan(trace)
-			span := finishSpan(s, tc.commandLine...)
+			s := startTestSpan(trace)
+			span := finishTestSpan(s, tc.commandLine...)
 
 			assert.Equal(t, tc.expectedStatus, span.Status().Code)
 			assert.Equal(t, tc.expectedMessage, span.Status().Description)

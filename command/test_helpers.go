@@ -9,11 +9,7 @@ import (
 	"go.opentelemetry.io/otel/sdk/trace"
 )
 
-func startTrace() string {
-	return tracing.NewTraceParent()
-}
-
-func startSpan(trace string, extra ...string) string {
+func startTestSpan(trace string, extra ...string) string {
 
 	ui := cli.NewMockUi()
 	start, _ := NewGroupStartCommand(ui)
@@ -23,7 +19,7 @@ func startSpan(trace string, extra ...string) string {
 	return tp
 }
 
-func finishSpan(span string, extra ...string) trace.ReadOnlySpan {
+func finishTestSpan(span string, extra ...string) trace.ReadOnlySpan {
 	ui := cli.NewMockUi()
 	exporter := tracing.NewMemoryExporter()
 	cmd, _ := NewGroupFinishCommand(ui)
