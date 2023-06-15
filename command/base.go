@@ -25,6 +25,8 @@ type Base struct {
 
 	now              func() int64
 	testSpanExporter tracesdk.SpanExporter
+
+	flags *pflag.FlagSet
 }
 
 func NewBase(ui cli.Ui, cmd NamedCommand) Base {
@@ -61,9 +63,12 @@ func (b *Base) Help() string {
 
 func (b *Base) allFlags() *pflag.FlagSet {
 
-	flags := b.cmd.Flags()
+	if b.flags == nil {
+		b.flags = b.cmd.Flags()
 
-	return flags
+	}
+
+	return b.flags
 }
 
 func (b *Base) allEnvironmentVariables() map[string]string {

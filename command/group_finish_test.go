@@ -3,11 +3,13 @@ package command
 import (
 	"context"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 	"trace/tracing"
 
 	"github.com/stretchr/testify/assert"
+	"go.opentelemetry.io/otel/codes"
 )
 
 func TestParentingSpans(t *testing.T) {
@@ -26,7 +28,7 @@ func TestParentingSpans(t *testing.T) {
 
 	assert.NoError(t, createSpan(tracer, tp, finish.UnixNano(), map[string]string{
 		"start": strconv.FormatInt(start.UnixNano(), 10),
-	}))
+	}, codes.Ok, ""))
 
 	span := exporter.Spans[0]
 	assert.Equal(t, trace.String(), span.SpanContext().TraceID().String())
@@ -66,4 +68,42 @@ func TestSpanFinish(t *testing.T) {
 	assert.Equal(t, "5", attrs["cache_size"])
 	assert.Equal(t, "true", attrs["at_start"])
 	assert.Equal(t, "true", attrs["at_finish"])
+}
+
+func TestSpanErrorFlag(t *testing.T) {
+	trace := startTrace()
+
+	cases := []struct {
+		commandLine     []string
+		expectedMessage string
+		expectedStatus  codes.Code
+	}{
+		{
+			commandLine:     []string{},
+			expectedMessage: "",
+			expectedStatus:  codes.Ok,
+		},
+		{
+			commandLine:     []string{"--error"},
+			expectedMessage: "",
+			expectedStatus:  codes.Error,
+		},
+		{
+			commandLine:     []string{"--error=oh no"},
+			expectedMessage: "oh no",
+			expectedStatus:  codes.Error,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(strings.Join(tc.commandLine, "-"), func(t *testing.T) {
+
+			s := startSpan(trace)
+			span := finishSpan(s, tc.commandLine...)
+
+			assert.Equal(t, tc.expectedStatus, span.Status().Code)
+			assert.Equal(t, tc.expectedMessage, span.Status().Description)
+		})
+	}
+
 }

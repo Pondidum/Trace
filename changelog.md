@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.0.9] - 2023-06-16
+
+### Added
+
+* `group finish` command supports `--error` flag to set the span status to Error.  Optionally you can write `--error="some message"` to set the span status description.
+
 ## [0.0.8] - 2023-05-25
 
 ### Fixed

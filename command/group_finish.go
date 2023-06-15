@@ -10,6 +10,7 @@ import (
 
 	"github.com/mitchellh/cli"
 	"github.com/spf13/pflag"
+	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -23,7 +24,8 @@ func NewGroupFinishCommand(ui cli.Ui) (*GroupFinishCommand, error) {
 type GroupFinishCommand struct {
 	Base
 
-	attrPairs []string
+	attrPairs    []string
+	errorMessage string
 }
 
 func (c *GroupFinishCommand) Name() string {
@@ -36,7 +38,11 @@ func (c *GroupFinishCommand) Synopsis() string {
 
 func (c *GroupFinishCommand) Flags() *pflag.FlagSet {
 	flags := pflag.NewFlagSet(c.Name(), pflag.ContinueOnError)
+
 	flags.StringSliceVar(&c.attrPairs, "attr", []string{}, "")
+	flags.StringVar(&c.errorMessage, "error", "", "")
+	flags.Lookup("error").NoOptDefVal = "unset"
+
 	return flags
 }
 
@@ -60,7 +66,7 @@ func (c *GroupFinishCommand) RunContext(ctx context.Context, args []string) erro
 		return err
 	}
 
-	state, err := c.readState(groupId)
+	props, err := c.readState(groupId)
 	if err != nil {
 		return err
 	}
@@ -71,10 +77,10 @@ func (c *GroupFinishCommand) RunContext(ctx context.Context, args []string) erro
 	}
 
 	for k, v := range attrs {
-		state[k] = v
+		props[k] = v
 	}
 
-	parentSpan, err := trace.SpanIDFromHex(state["parent"])
+	parentSpan, err := trace.SpanIDFromHex(props["parent"])
 	if err != nil {
 		return err
 	}
@@ -91,14 +97,32 @@ func (c *GroupFinishCommand) RunContext(ctx context.Context, args []string) erro
 		return err
 	}
 
-	if err := createSpan(tracer, parentSpanId, c.now(), state); err != nil {
+	status, description := c.buildSpanStatus()
+
+	if err := createSpan(tracer, parentSpanId, c.now(), props, status, description); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func createSpan(tp trace.Tracer, traceParent string, finish int64, props map[string]string) error {
+func (c *GroupFinishCommand) buildSpanStatus() (codes.Code, string) {
+	flag := c.allFlags().Lookup("error")
+
+	if flag.Changed {
+
+		value := c.errorMessage
+		if value == "unset" {
+			value = ""
+		}
+
+		return codes.Error, value
+	}
+
+	return codes.Ok, ""
+}
+
+func createSpan(tp trace.Tracer, traceParent string, finish int64, props map[string]string, status codes.Code, description string) error {
 
 	nano := props["start"]
 	i, err := strconv.ParseInt(nano, 10, 64)
@@ -115,6 +139,8 @@ func createSpan(tp trace.Tracer, traceParent string, finish int64, props map[str
 	delete(props, "start")
 	attrs := tracing.AttributesFromMap(props)
 	span.SetAttributes(attrs...)
+
+	span.SetStatus(status, description)
 
 	span.End(trace.WithTimestamp(time.Unix(0, finish)))
 
