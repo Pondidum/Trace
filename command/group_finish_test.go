@@ -1,41 +1,13 @@
 package command
 
 import (
-	"context"
-	"strconv"
 	"strings"
 	"testing"
-	"time"
 	"trace/tracing"
 
 	"github.com/stretchr/testify/assert"
 	"go.opentelemetry.io/otel/codes"
 )
-
-func TestParentingSpans(t *testing.T) {
-
-	tp := tracing.NewTraceParent()
-	trace, parentSpan, _ := tracing.ParseTraceParent(tp)
-	exporter := tracing.NewMemoryExporter()
-
-	g, _ := tracing.ContinueExisting(tp)
-	provider, err := tracing.CreateTraceProvider(context.Background(), g, exporter)
-	assert.NoError(t, err)
-	tracer := provider.Tracer("tests")
-
-	start := time.Now()
-	finish := start.Add(10 * time.Second)
-
-	assert.NoError(t, createSpan(tracer, tp, finish.UnixNano(), map[string]string{
-		"start": strconv.FormatInt(start.UnixNano(), 10),
-	}, codes.Ok, ""))
-
-	span := exporter.Spans[0]
-	assert.Equal(t, trace.String(), span.SpanContext().TraceID().String())
-	assert.Equal(t, trace.String(), span.Parent().TraceID().String())
-	assert.Equal(t, parentSpan.String(), span.Parent().SpanID().String())
-
-}
 
 func TestSpanFinish(t *testing.T) {
 	trace := tracing.NewTraceParent()

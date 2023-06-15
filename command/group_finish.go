@@ -24,8 +24,7 @@ func NewGroupFinishCommand(ui cli.Ui) (*GroupFinishCommand, error) {
 type GroupFinishCommand struct {
 	Base
 
-	attrPairs    []string
-	errorMessage string
+	attrPairs []string
 }
 
 func (c *GroupFinishCommand) Name() string {
@@ -40,7 +39,8 @@ func (c *GroupFinishCommand) Flags() *pflag.FlagSet {
 	flags := pflag.NewFlagSet(c.Name(), pflag.ContinueOnError)
 
 	flags.StringSliceVar(&c.attrPairs, "attr", []string{}, "")
-	flags.StringVar(&c.errorMessage, "error", "", "")
+
+	flags.String("error", "", "")
 	flags.Lookup("error").NoOptDefVal = "unset"
 
 	return flags
@@ -97,37 +97,23 @@ func (c *GroupFinishCommand) RunContext(ctx context.Context, args []string) erro
 		return err
 	}
 
-	status, description := c.buildSpanStatus()
-
-	if err := createSpan(tracer, parentSpanId, c.now(), props, status, description); err != nil {
+	span, err := createSpan(tracer, parentSpanId, props)
+	if err != nil {
 		return err
 	}
+
+	applyProps(span, props)
+	applyStatus(span, c.allFlags().Lookup("error"))
+	finishSpan(span, c.now())
 
 	return nil
 }
 
-func (c *GroupFinishCommand) buildSpanStatus() (codes.Code, string) {
-	flag := c.allFlags().Lookup("error")
-
-	if flag.Changed {
-
-		value := c.errorMessage
-		if value == "unset" {
-			value = ""
-		}
-
-		return codes.Error, value
-	}
-
-	return codes.Ok, ""
-}
-
-func createSpan(tp trace.Tracer, traceParent string, finish int64, props map[string]string, status codes.Code, description string) error {
-
+func createSpan(tp trace.Tracer, traceParent string, props map[string]string) (trace.Span, error) {
 	nano := props["start"]
 	i, err := strconv.ParseInt(nano, 10, 64)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	start := time.Unix(0, i)
 
@@ -135,14 +121,34 @@ func createSpan(tp trace.Tracer, traceParent string, finish int64, props map[str
 	ctx := tracing.WithTraceParent(context.Background(), traceParent)
 	_, span := tp.Start(ctx, props["name"], trace.WithTimestamp(start))
 
+	return span, nil
+}
+
+func finishSpan(span trace.Span, finish int64) {
+	span.End(trace.WithTimestamp(time.Unix(0, finish)))
+}
+
+func applyProps(span trace.Span, props map[string]string) {
+
 	delete(props, "name")
 	delete(props, "start")
+
 	attrs := tracing.AttributesFromMap(props)
+
 	span.SetAttributes(attrs...)
+}
 
-	span.SetStatus(status, description)
+func applyStatus(span trace.Span, flag *pflag.Flag) {
 
-	span.End(trace.WithTimestamp(time.Unix(0, finish)))
+	if flag != nil && flag.Changed {
 
-	return nil
+		value := flag.Value.String()
+		if value == "unset" {
+			value = ""
+		}
+
+		span.SetStatus(codes.Error, value)
+	} else {
+		span.SetStatus(codes.Ok, "")
+	}
 }
