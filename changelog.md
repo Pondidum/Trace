@@ -4,7 +4,7 @@
 
 ### Added
 
-* `group finish` command supports `--error` flag to set the span status to Error.  Optionally you can write `--error="some message"` to set the span status description.
+* `group finish` and `finish` commands support the `--error` flag to set the span status to Error.  Optionally you can write `--error="some message"` to set the span status description.
 
 ## [0.0.8] - 2023-05-25
 

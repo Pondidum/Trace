@@ -4,13 +4,10 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strconv"
-	"time"
 	"trace/tracing"
 
 	"github.com/mitchellh/cli"
 	"github.com/spf13/pflag"
-	"go.opentelemetry.io/otel/trace"
 )
 
 func NewFinishCommand(ui cli.Ui) (*FinishCommand, error) {
@@ -38,6 +35,9 @@ func (c *FinishCommand) Flags() *pflag.FlagSet {
 	flags := pflag.NewFlagSet(c.Name(), pflag.ContinueOnError)
 
 	flags.StringSliceVar(&c.attrPairs, "attr", []string{}, "")
+
+	flags.String("error", "", "")
+	flags.Lookup("error").NoOptDefVal = "unset"
 
 	return flags
 }
@@ -81,30 +81,14 @@ func (c *FinishCommand) RunContext(ctx context.Context, args []string) error {
 		return err
 	}
 
-	if err := createRootSpan(tracer, traceParent, c.now(), state); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func createRootSpan(tp trace.Tracer, traceParent string, finish int64, props map[string]string) error {
-
-	nano := props["start"]
-	i, err := strconv.ParseInt(nano, 10, 64)
+	span, err := createSpan(tracer, traceParent, state)
 	if err != nil {
 		return err
 	}
-	start := time.Unix(0, i)
 
-	_, span := tp.Start(context.Background(), props["name"], trace.WithTimestamp(start))
-
-	delete(props, "name")
-	delete(props, "start")
-	attrs := tracing.AttributesFromMap(props)
-	span.SetAttributes(attrs...)
-
-	span.End(trace.WithTimestamp(time.Unix(0, finish)))
+	applyProps(span, state)
+	applyStatus(span, c.allFlags().Lookup("error"))
+	finishSpan(span, c.now())
 
 	return nil
 }

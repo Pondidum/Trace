@@ -9,6 +9,7 @@ import (
 
 	"github.com/mitchellh/cli"
 	"github.com/stretchr/testify/assert"
+	"go.opentelemetry.io/otel/codes"
 )
 
 func TestFinishingTrace(t *testing.T) {
@@ -56,7 +57,7 @@ func TestFinishingTrace(t *testing.T) {
 		assert.NoError(t, err)
 
 		// finish the trace 10 seconds later
-		cmd, _, exporter := createTestFinishCommand()
+		cmd, ui, exporter := createTestFinishCommand()
 		cmd.now = func() int64 { return endTime }
 		assert.Equal(t, 0, cmd.Run([]string{tp, "--attr", "at_finish=true"}), ui.ErrorWriter.String())
 
@@ -74,6 +75,17 @@ func TestFinishingTrace(t *testing.T) {
 		assert.Equal(t, "true", attrs["at_finish"])
 	})
 
+	t.Run("error flag", func(t *testing.T) {
+		tp := startTestTrace()
+
+		cmd, ui, exporter := createTestFinishCommand()
+		assert.Equal(t, 0, cmd.Run([]string{tp, "--error=oh dear"}), ui.ErrorWriter.String())
+
+		span := exporter.Spans[0]
+
+		assert.Equal(t, codes.Error, span.Status().Code)
+		assert.Equal(t, "oh dear", span.Status().Description)
+	})
 }
 
 func createTestFinishCommand() (*FinishCommand, *cli.MockUi, *tracing.MemoryExporter) {
