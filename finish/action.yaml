@@ -1,0 +1,31 @@
+name: 'finish'
+description: Finish a trace or trace group
+author: Andy Sammalmaa
+branding:
+  icon: activity
+  color: blue
+
+inputs:
+  trace_parent:
+    description: the current trace or trace group
+    required: true
+  is_group:
+    description: if the trace_parent is a group.  set to `start-continue.outputs.resumed`
+    required: false
+
+runs:
+  using: composite
+  steps:
+  - id: finish
+    shell: sh
+    run: |
+      if [ "${{ inputs.is_group }}" = "true" ]; then
+        echo "==> Finishing trace group"
+
+        trace group finish "${{ inputs.trace_parent }}"
+
+      else
+        echo "==> Finishing trace"
+        trace finish "${{ inputs.trace_parent }}"
+
+      fi

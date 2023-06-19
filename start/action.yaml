@@ -1,0 +1,56 @@
+name: 'start'
+description: Start a trace or start a group under the existing trace
+author: Andy Sammalmaa
+branding:
+  icon: activity
+  color: blue
+
+inputs:
+  trace_parent:
+    description: the current trace parent, if any.  If this is blank, a new trace will be started
+    default: ""
+    required: false
+
+outputs:
+  is_group:
+    value: ${{ steps.start.outputs.is_group }}
+  trace_parent:
+    value: ${{ steps.start.outputs.trace_parent }}
+
+runs:
+  using: composite
+  steps:
+  - id: start
+    shell: sh
+    run: |
+      if [ -n "${{ inputs.trace_parent }}" ]; then
+        echo "==> Starting trace group"
+        trace_parent=$(trace group start "${{ github.workflow }}" "${{ inputs.trace_parent }}")
+
+        echo "TRACEPARENT=${trace_parent}" >> "${GITHUB_ENV}"
+        echo "is_group=true" >> "${GITHUB_OUTPUT}"
+
+      else
+
+        echo "==> Starting new trace"
+        echo "--> Querying run start time..."
+
+        url="${{ github.api_url }}/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}"
+        json=$(curl -sSL \
+          -H "Accept: application/vnd.github+json" \
+          -H "Authorization: Bearer ${{ github.token }}" \
+          -H "X-GitHub-Api-Version: 2022-11-28" \
+          "${url}")
+
+        created_at=$(echo "$json" | sed -n 's/.*"created_at".*"\(.*\)".*/\1/p')
+
+        echo "    run started: ${created_at}"
+
+        trace_parent=$(trace start "${{ github.repository }}/${{ github.workflow }}" --when "${created_at}")
+
+        echo "TRACEPARENT=${trace_parent}" >> "${GITHUB_ENV}"
+
+        echo "trace_parent=${trace_parent}" >> "${GITHUB_OUTPUT}"
+        echo "is_group=false" >> "${GITHUB_OUTPUT}"
+
+      fi

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.10] - 2023-06-19
+
+### Added
+
+* `trace/start` action: starts a new trace, or starts a trace group.  When starting a trace, it uses the github API to figure out when your run actually started for the trace's timestamp
+* `trace/finish` action: finishes a trace or trace group.  Uses the outputs from `trace/start` to know exactly what to do
+
 ## [0.0.9] - 2023-06-16
 
 ### Added
