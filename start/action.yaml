@@ -28,6 +28,8 @@ runs:
         trace_parent=$(trace group start "${{ github.workflow }}" "${{ inputs.trace_parent }}")
 
         echo "TRACEPARENT=${trace_parent}" >> "${GITHUB_ENV}"
+
+        echo "trace_parent=${trace_parent}" >> "${GITHUB_OUTPUT}"
         echo "is_group=true" >> "${GITHUB_OUTPUT}"
 
       else
