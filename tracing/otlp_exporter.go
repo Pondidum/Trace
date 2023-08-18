@@ -43,13 +43,21 @@ func ConfigFromEnvironment() (*ExporterConfig, error) {
 
 	if val := os.Getenv(OtlpHeaders); val != "" {
 		for _, pair := range strings.Split(val, ",") {
-			index := strings.Index(pair, ":")
-			if index == -1 {
-                                index := strings.Index(pair, "=")
-                                if index == -1 {
-                                        return nil, fmt.Errorf("unable to parse '%s' as a key:value pair, missing a ':'", pair)
-                                }
+			indexOfColon := strings.Index(pair, ":")
+                        indexOfEq := strings.Index(pair, "=")
+			if indexOfColon == -1 && indexOfEq == -1 {
+                                return nil, fmt.Errorf("unable to parse '%s' as a key:value pair or key=value pair, missing a ':' or an '='", pair)
 			}
+                        if indexOfColon != -1 && indexOfEq != -1 {
+                                return nil, fmt.Errorf("unable to parse '%s' as a key:value pair or key=value pair, contains both ':' and '='", pair)
+                        }
+
+                        var index int
+                        if indexOfColon >= 0 {
+                                index = indexOfColon
+                        } else {
+                                index = indexOfEq
+                        }
 
 			key := strings.TrimSpace(pair[0:index])
 			val := strings.TrimSpace(pair[index+1:])
