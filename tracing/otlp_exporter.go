@@ -45,7 +45,10 @@ func ConfigFromEnvironment() (*ExporterConfig, error) {
 		for _, pair := range strings.Split(val, ",") {
 			index := strings.Index(pair, ":")
 			if index == -1 {
-				return nil, fmt.Errorf("unable to parse '%s' as a key:value pair, missing a ':'", pair)
+                                index := strings.Index(pair, "=")
+                                if index == -1 {
+                                        return nil, fmt.Errorf("unable to parse '%s' as a key:value pair, missing a ':'", pair)
+                                }
 			}
 
 			key := strings.TrimSpace(pair[0:index])
