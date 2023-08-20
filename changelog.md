@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.0.11] - 2023-08-20
+
+### Fixed
+
+* `OTEL_EXPORTER_OTLP_HEADERS` should be key value pairs in `key=value,...` syntax, not using `:`.  [Otel Docs](https://opentelemetry.io/docs/concepts/sdk-configuration/otlp-exporter-configuration/#otel_exporter_otlp_headers).
+
+
+
 ## [0.0.10] - 2023-06-19
 
 ### Added

@@ -17,7 +17,7 @@ import (
 
 const OtlpEndpointEnvVar = "OTEL_EXPORTER_OTLP_ENDPOINT"
 const OtlpTracesEndpointEnvVar = "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT"
-const OtlpHeaders = "OTEL_EXPORTER_OTLP_HEADERS"
+const OtlpHeadersEnvVar = "OTEL_EXPORTER_OTLP_HEADERS"
 
 type ExporterConfig struct {
 	Endpoint string
@@ -41,11 +41,11 @@ func ConfigFromEnvironment() (*ExporterConfig, error) {
 		config.Endpoint = val
 	}
 
-	if val := os.Getenv(OtlpHeaders); val != "" {
+	if val := os.Getenv(OtlpHeadersEnvVar); val != "" {
 		for _, pair := range strings.Split(val, ",") {
-			index := strings.Index(pair, ":")
+			index := strings.Index(pair, "=")
 			if index == -1 {
-				return nil, fmt.Errorf("unable to parse '%s' as a key:value pair, missing a ':'", pair)
+				return nil, fmt.Errorf("unable to parse '%s' as a key=value pair, missing a '='", pair)
 			}
 
 			key := strings.TrimSpace(pair[0:index])
