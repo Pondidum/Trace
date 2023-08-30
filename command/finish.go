@@ -81,7 +81,7 @@ func (c *FinishCommand) RunContext(ctx context.Context, args []string) error {
 		return err
 	}
 
-	span, err := createSpan(tracer, traceParent, state)
+	span, err := createRootSpan(tracer, traceParent, state)
 	if err != nil {
 		return err
 	}
