@@ -9,8 +9,8 @@ import (
 
 func defaultAttributes() []attribute.KeyValue {
 
-	serviceName := os.getEnv("OTEL_SERVICE_NAME")
-	if serviceName == "" { 
+	serviceName := os.Getenv("OTEL_SERVICE_NAME")
+	if serviceName == "" {
 		serviceName = os.Getenv("SHELL")
 	}
 
