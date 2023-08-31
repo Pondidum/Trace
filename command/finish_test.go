@@ -69,6 +69,7 @@ func TestFinishingTrace(t *testing.T) {
 		assert.Equal(t, endTime, span.EndTime().UnixNano())
 		assert.Equal(t, startTrace.String(), span.SpanContext().TraceID().String())
 		assert.Equal(t, startSpan.String(), span.SpanContext().SpanID().String())
+                assert.False(t, span.Parent().HasSpanID())
 
 		attrs := mapFromAttributes(span.Attributes())
 		assert.Equal(t, "true", attrs["at_start"])
