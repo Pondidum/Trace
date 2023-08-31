@@ -8,8 +8,14 @@ import (
 )
 
 func defaultAttributes() []attribute.KeyValue {
+
+	serviceName := os.getEnv("OTEL_SERVICE_NAME")
+	if serviceName == "" { 
+		serviceName = os.Getenv("SHELL")
+	}
+
 	return []attribute.KeyValue{
-		semconv.ServiceNameKey.String(os.Getenv("SHELL")),
+		semconv.ServiceNameKey.String(serviceName),
 		semconv.ServiceVersionKey.String("1.0.0"),
 	}
 }
