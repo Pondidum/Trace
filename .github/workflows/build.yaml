@@ -6,6 +6,7 @@ on:
       - '**'
     tags-ignore:
       - '**'
+  pull_request:
 
 concurrency:
   group: ${{ github.ref }}
@@ -23,7 +24,9 @@ jobs:
       with:
         go-version: "1.18"
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: "0"
 
     - name: Download Modules
       run: go mod download
@@ -71,8 +74,17 @@ jobs:
         echo "TRACE_VERSION=$(./trace version --short)" >> "${GITHUB_ENV}"
         ./trace version --changelog --raw | tee release-notes.md
 
+    - name: Check if Changelog has changed
+      run: |
+        head=$(git rev-parse HEAD)
+        base=$(git rev-parse origin/main)
+
+        has_change=$(git diff --name-only "${base}..${head}" | grep "changelog.md" --silent && echo "true" || echo "false")
+
+        echo "changelog_updated=${has_change}" >> "${GITHUB_ENV}"
+
     - name: Release
-      if: github.ref_name == 'main'
+      if: ${{ github.ref_name == 'main' && env.changelog_update == 'true' }}
       uses: softprops/action-gh-release@v1
       with:
         name: ${{ env.TRACE_VERSION }}
