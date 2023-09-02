@@ -1,5 +1,15 @@
 # Changelog
 
+### [0.0.12] - 2023-09-02
+
+### Added
+
+* Support `OTEL_SERVICE_NAME` when running on a non-detected CI system (Thanks @parsonsmatt, PR #7)
+
+### Fixed
+
+* `finish` was improperly creating the root span (Thanks @parsonsmatt, PR #6)
+
 ## [0.0.11] - 2023-08-20
 
 ### Fixed
