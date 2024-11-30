@@ -9,7 +9,7 @@ import (
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	tracesdk "go.opentelemetry.io/otel/sdk/trace"
-	semconv "go.opentelemetry.io/otel/semconv/v1.4.0"
+	semconv "go.opentelemetry.io/otel/semconv/v1.27.0"
 )
 
 func CreateTraceProvider(ctx context.Context, g tracesdk.IDGenerator, exporter tracesdk.SpanExporter) (*tracesdk.TracerProvider, error) {
