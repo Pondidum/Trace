@@ -19,13 +19,20 @@ runs:
   - id: finish
     shell: sh
     run: |
-      if [ "${{ inputs.is_group }}" = "true" ]; then
-        echo "==> Finishing trace group"
 
-        trace group finish "${{ inputs.trace_parent }}"
+      flags=""
+      if [ ${{ job.status }} != "success" ]; then
+        flags="--error={{ job.status }}"
+      fi
+
+      if [ "${{ inputs.is_group }}" = "true" ]; then
+
+        echo "==> Finishing trace group"
+        trace group finish "${{ inputs.trace_parent }}" ${flags}
 
       else
+
         echo "==> Finishing trace"
-        trace finish "${{ inputs.trace_parent }}"
+        trace finish "${{ inputs.trace_parent }}" ${flags}
 
       fi
