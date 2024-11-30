@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -eu
+
 export "PATH=${PATH}:../../"
 
 # start of build
