@@ -18,5 +18,8 @@ func gitlabAttributes() []attribute.KeyValue {
 		fromEnv("CI_JOB_ID", "gitlab.job.id"),
 		fromEnv("CI_PIPELINE_ID", "gitlab.pipeline.id"),
 		fromEnv("CI_COMMIT_SHA", "gitlab.sha"),
+
+		semconv.VCSRepositoryRefName(os.Getenv("CI_COMMIT_REF_NAME")),
+		semconv.VCSRepositoryRefRevision(os.Getenv("CI_COMMIT_SHA")),
 	}
 }
