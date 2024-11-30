@@ -1,6 +1,17 @@
 # Changelog
 
-### [0.0.12] - 2023-09-02
+## [0.0.13] - 2024-11-30
+
+### Added
+
+* Start using otel semantic conventions for [cicd](https://opentelemetry.io/docs/specs/semconv/attributes-registry/cicd/) and [vcs](https://opentelemetry.io/docs/specs/semconv/attributes-registry/vcs/) attributes
+
+### Changes
+
+* Updated golang version (1.18 -> 1.22)
+* otel version (1.11.2 -> 1.32.0)
+
+## [0.0.12] - 2023-09-02
 
 ### Added
 
