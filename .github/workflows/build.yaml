@@ -49,6 +49,8 @@ jobs:
       run: go test -v ./...
 
     - name: Run Example
+      env:
+        OTEL_EXPORTER_OTLP_INSECURE: true
       run: |
         cd example/basic
         ./build.sh

@@ -129,12 +129,8 @@ func (b *Base) createTracer(ctx context.Context, g tracesdk.IDGenerator) (trace.
 	exporter := b.testSpanExporter
 
 	if exporter == nil {
-		cfg, err := tracing.ConfigFromEnvironment()
-		if err != nil {
-			return nil, err
-		}
-
-		if exporter, err = tracing.CreateExporter(ctx, cfg); err != nil {
+		var err error
+		if exporter, err = tracing.CreateExporter(ctx); err != nil {
 			return nil, err
 		}
 	}
