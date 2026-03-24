@@ -72,9 +72,16 @@ jobs:
         name: trace.json
         path: example/basic/trace.json
 
-    - name: Generate Release Notes
+    - name: Generate Release Notes - Main
+      if: ${{ github.ref_name == 'main' }}
       run: |
         echo "TRACE_VERSION=$(./trace version --short)" >> "${GITHUB_ENV}"
+        ./trace version --changelog --raw | tee release-notes.md
+
+    - name: Generate Release Notes - Branch
+      if: ${{ github.ref_name != 'main' }}
+      run: |
+        echo "TRACE_VERSION=$(git rev-parse --short HEAD)" >> "${GITHUB_ENV}"
         ./trace version --changelog --raw | tee release-notes.md
 
     - name: Check if Changelog has changed
@@ -85,6 +92,16 @@ jobs:
           changelog:
             - 'changelog.md'
 
+    - name: PreRelease
+      if: ${{ github.ref_name != 'main' }}
+      uses: softprops/action-gh-release@v2
+      with:
+        name: ${{ env.TRACE_VERSION }}
+        tag_name: ${{ env.TRACE_VERSION }}
+        body_path: release-notes.md
+        prerelease: true
+        files: trace
+
     - name: Release
       if: ${{ github.ref_name == 'main' && steps.changes.outputs.changelog == 'true' }}
       uses: softprops/action-gh-release@v2
@@ -94,3 +111,4 @@ jobs:
         body_path: release-notes.md
         files: trace
         overwrite_files: false
+
