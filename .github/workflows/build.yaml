@@ -87,9 +87,10 @@ jobs:
 
     - name: Release
       if: ${{ github.ref_name == 'main' && steps.changes.outputs.changelog == 'true' }}
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       with:
         name: ${{ env.TRACE_VERSION }}
         tag_name: ${{ env.TRACE_VERSION }}
         body_path: release-notes.md
         files: trace
+        overwrite_files: false
