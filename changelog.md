@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.1.0] - 2026-03-24
+
+### Removed
+
+* Removed the OTLP HTTP exporter; use grpc instead
+* Removed a load of OTEL code which was just a reimplementation of internal exporter details
+
+### Changes
+
+* gha: update actions versions preventing builds
+* gha: prevent releases from having their assets overwritten after publish
+* gha: allow draft releases (commit hash versions) for easier testing with the install action
+
 ## [0.0.13] - 2024-11-30
 
 ### Added
