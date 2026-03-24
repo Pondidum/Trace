@@ -21,11 +21,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v6
       with:
         fetch-depth: "0"
     
-    - uses: actions/setup-go@v5
+    - uses: actions/setup-go@v6
       with:
         go-version-file: "./go.mod"
 
@@ -43,7 +43,7 @@ jobs:
       run: go build -ldflags="-X trace/version.GitCommit=${{ github.sha }} -X trace/version.Prerelease="""
 
     - name: Start Jaeger Stack
-      uses: hoverkraft-tech/compose-action@v2.0.2
+      uses: hoverkraft-tech/compose-action@v2
 
     - name: Test
       run: go test -v ./...
@@ -61,13 +61,13 @@ jobs:
         curl "${jaeger_url}" -o "trace.json"
 
     - name: Store Trace Binary
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v6
       with:
         name: trace
         path: trace
 
     - name: Store Trace Json
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v6
       with:
         name: trace.json
         path: example/basic/trace.json
@@ -78,7 +78,7 @@ jobs:
         ./trace version --changelog --raw | tee release-notes.md
 
     - name: Check if Changelog has changed
-      uses: dorny/paths-filter@v2
+      uses: dorny/paths-filter@v4
       id: changes
       with:
         filters: |
